@@ -141,6 +141,33 @@ const depositPortfolio = async (
     })
     .signers([owner])
     .rpc();
+
+  return {
+    ownerTokenAccount,
+  };
+};
+
+const withdrawalPortfolio = async (
+  owner: anchor.web3.Keypair,
+  ownerTokenAccount: anchor.web3.PublicKey,
+  portfolioAccount: anchor.web3.PublicKey,
+  portfolioTokenAllocationAccount: anchor.web3.PublicKey,
+  portfolioTokenAllocationTokenAccount: anchor.web3.PublicKey,
+  amount: number
+) => {
+  await program.methods
+    .withdrawalPortfolio({
+      amount: new anchor.BN(amount * 10 ** 9),
+    })
+    .accounts({
+      payer: owner.publicKey,
+      portfolioTokenAllocationTokenAccount,
+      portfolioTokenAllocationAccount,
+      portfolioAccount,
+      payerTokenAccount: ownerTokenAccount,
+    })
+    .signers([owner])
+    .rpc();
 };
 
 describe('w3balance-contract', () => {
@@ -198,5 +225,42 @@ describe('w3balance-contract', () => {
         portfolioTokenAllocationTokenAccount
       );
     expect(portfolioTokenAllocationBalance.value.uiAmount).to.equal(100);
+  });
+
+  it.only('Withdraws tokens from Portfolio Token Allocation', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
+    );
+    const {
+      mint,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+    const { ownerTokenAccount } = await depositPortfolio(
+      owner,
+      portfolioAccount,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+      mint,
+      100
+    );
+    await withdrawalPortfolio(
+      owner,
+      ownerTokenAccount.address,
+      portfolioAccount,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+      100
+    );
+    const portfolioTokenAllocationBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        portfolioTokenAllocationTokenAccount
+      );
+    expect(portfolioTokenAllocationBalance.value.uiAmount).to.equal(0);
+    const ownerTokenBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        ownerTokenAccount.address
+      );
+    expect(ownerTokenBalance.value.uiAmount).to.equal(100);
   });
 });
