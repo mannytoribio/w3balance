@@ -20,11 +20,11 @@ const program = anchor.workspace
 
 const connection = anchor.getProvider().connection;
 
-const createFund = async (uniqueName: string) => {
+const createPortfolio = async (uniqueName: string) => {
   const owner = anchor.web3.Keypair.generate();
-  const [fundAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+  const [portfolioAccount] = anchor.web3.PublicKey.findProgramAddressSync(
     [
-      Buffer.from(anchor.utils.bytes.utf8.encode('fund')),
+      Buffer.from(anchor.utils.bytes.utf8.encode('portfolio')),
       owner.publicKey.toBuffer(),
       Buffer.from(anchor.utils.bytes.utf8.encode(uniqueName)),
     ],
@@ -37,25 +37,25 @@ const createFund = async (uniqueName: string) => {
   await connection.confirmTransaction(airdropTx);
 
   await program.methods
-    .createFund({
+    .createPortfolio({
       uniqueName: uniqueName,
     })
     .accounts({
-      fundAccount,
+      portfolioAccount,
       payer: owner.publicKey,
     })
     .signers([owner])
     .rpc();
 
   return {
-    fundAccount,
+    portfolioAccount,
     owner,
   };
 };
 
-const addFundTokenAllocation = async (
+const addPortfolioTokenAllocation = async (
   owner: anchor.web3.Keypair,
-  fundAccount: anchor.web3.PublicKey,
+  portfolioAccount: anchor.web3.PublicKey,
   percentage: number = 50
 ) => {
   const decimals = 9;
@@ -66,71 +66,75 @@ const addFundTokenAllocation = async (
     null,
     decimals
   );
-  const [fundTokenAllocationAccount] =
+  const [portfolioTokenAllocationAccount] =
     anchor.web3.PublicKey.findProgramAddressSync(
       [
-        Buffer.from(anchor.utils.bytes.utf8.encode('fund_token_allocation')),
+        Buffer.from(
+          anchor.utils.bytes.utf8.encode('portfolio_token_allocation')
+        ),
         owner.publicKey.toBuffer(),
         mint.toBuffer(),
       ],
       program.programId
     );
-  const fundTokenAllocationTokenAccount = getAssociatedTokenAddressSync(
+  const portfolioTokenAllocationTokenAccount = getAssociatedTokenAddressSync(
     mint,
-    fundAccount,
+    portfolioAccount,
     true
   );
 
   await program.methods
-    .addFundTokenAllocation({
+    .addPortfolioTokenAllocation({
       tokenMint: mint,
       percentage,
     })
     .accounts({
-      fundAccount,
-      fundTokenAllocationTokenAccount,
+      portfolioAccount,
+      portfolioTokenAllocationTokenAccount,
       mintAccount: mint,
       payer: owner.publicKey,
-      fundTokenAllocationAccount,
+      portfolioTokenAllocationAccount,
     })
     .signers([owner])
     .rpc();
 
   return {
     mint,
-    fundTokenAllocationTokenAccount,
-    fundTokenAllocationAccount,
+    portfolioTokenAllocationTokenAccount,
+    portfolioTokenAllocationAccount,
   };
 };
 
 describe('w3balance-contract', () => {
-  it('Creates a Fund', async () => {
-    const uniqueName = 'My First Fund';
-    const { fundAccount } = await createFund(uniqueName);
-    const fund = await program.account.fund.fetch(fundAccount);
-    expect(fund.uniqueName === uniqueName);
+  it('Creates a Portfolio', async () => {
+    const uniqueName = 'My First Portfolio';
+    const { portfolioAccount } = await createPortfolio(uniqueName);
+    const portfolio = await program.account.portfolio.fetch(portfolioAccount);
+    expect(portfolio.uniqueName === uniqueName);
   });
 
-  it('Adds a Fund Token Allocation', async () => {
-    const { fundAccount, owner } = await createFund('My First Fund');
-    const { mint, fundTokenAllocationAccount } = await addFundTokenAllocation(
-      owner,
-      fundAccount,
-      50
+  it('Adds a Portfolio Token Allocation', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
     );
-    const fundTokenAllocation = await program.account.fundTokenAllocation.fetch(
-      fundTokenAllocationAccount
-    );
-    expect(fundTokenAllocation.percentage).to.equal(50);
+    const { mint, portfolioTokenAllocationAccount } =
+      await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+    const portfolioTokenAllocation =
+      await program.account.portfolioTokenAllocation.fetch(
+        portfolioTokenAllocationAccount
+      );
+    expect(portfolioTokenAllocation.percentage).to.equal(50);
   });
 
-  it('Fails when adding a fund that goes over 100 percent allocation', async () => {
-    const { fundAccount, owner } = await createFund('My First Fund');
-    await addFundTokenAllocation(owner, fundAccount, 50);
+  it('Fails when adding a portfolio that goes over 100 percent allocation', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
+    );
+    await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
     await expect(
-      addFundTokenAllocation(owner, fundAccount, 51)
+      addPortfolioTokenAllocation(owner, portfolioAccount, 51)
     ).to.eventually.be.rejectedWith(
-      'Fund token allocation exceeds 100 percent'
+      'Portfolio token allocation exceeds 100 percent'
     );
   });
 });
