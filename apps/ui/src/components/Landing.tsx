@@ -1,7 +1,7 @@
-import { FC } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ArrowRight, BarChart2, Lock, RefreshCw } from "lucide-react"
+import { FC } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, BarChart2, Lock, RefreshCw } from 'lucide-react';
 
 const LandingPage: FC = () => {
   return (
@@ -124,7 +124,7 @@ const LandingPage: FC = () => {
                   </Button>
                 </form>
                 <p className="text-xs text-gray-600">
-                  By signing up, you agree to our{" "}
+                  By signing up, you agree to our{' '}
                   <a className="underline underline-offset-2" href="#">
                     Terms & Conditions
                   </a>
@@ -148,7 +148,7 @@ const LandingPage: FC = () => {
         </nav>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default LandingPage
+export default LandingPage;
