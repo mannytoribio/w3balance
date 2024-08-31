@@ -105,6 +105,44 @@ const addPortfolioTokenAllocation = async (
   };
 };
 
+const depositPortfolio = async (
+  owner: anchor.web3.Keypair,
+  portfolioAccount: anchor.web3.PublicKey,
+  portfolioTokenAllocationAccount: anchor.web3.PublicKey,
+  portfolioTokenAllocationTokenAccount: anchor.web3.PublicKey,
+  mint: anchor.web3.PublicKey,
+  amount: number
+) => {
+  const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    owner,
+    mint,
+    owner.publicKey,
+    true
+  );
+  await mintTo(
+    connection,
+    owner,
+    mint,
+    ownerTokenAccount.address,
+    owner,
+    amount * 10 ** 9
+  );
+  await program.methods
+    .depositPortfolio({
+      amount: new anchor.BN(amount * 10 ** 9),
+    })
+    .accounts({
+      payer: owner.publicKey,
+      portfolioTokenAllocationTokenAccount,
+      portfolioTokenAllocationAccount,
+      portfolioAccount,
+      payerTokenAccount: ownerTokenAccount.address,
+    })
+    .signers([owner])
+    .rpc();
+};
+
 describe('w3balance-contract', () => {
   it('Creates a Portfolio', async () => {
     const uniqueName = 'My First Portfolio';
@@ -136,5 +174,29 @@ describe('w3balance-contract', () => {
     ).to.eventually.be.rejectedWith(
       'Portfolio token allocation exceeds 100 percent'
     );
+  });
+
+  it('Deposits tokens into Portfolio Token Allocation', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
+    );
+    const {
+      mint,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+    await depositPortfolio(
+      owner,
+      portfolioAccount,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+      mint,
+      100
+    );
+    const portfolioTokenAllocationBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        portfolioTokenAllocationTokenAccount
+      );
+    expect(portfolioTokenAllocationBalance.value.uiAmount).to.equal(100);
   });
 });
