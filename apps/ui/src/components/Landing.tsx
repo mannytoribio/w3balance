@@ -1,49 +1,13 @@
-import { FC } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowRight, BarChart2, Lock, RefreshCw } from 'lucide-react';
+import { FC } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ArrowRight, BarChart2, Lock, RefreshCw } from "lucide-react"
+import { Link } from "react-router-dom"
+import { UnifiedWalletButton } from "@jup-ag/wallet-adapter"
 
 const LandingPage: FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
-      <header className="px-4 lg:px-6 h-16 flex items-center">
-        <a className="flex items-center justify-center" href="#">
-          <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/w3Balance_text-jHC4RJAFISZ79tg2SEirFiILEPsQmC.png"
-            alt="w3Balance Logo"
-            width={150}
-            height={40}
-            className="mr-2"
-          />
-          <span className="sr-only">w3Balance</span>
-        </a>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            Features
-          </a>
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            Pricing
-          </a>
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            About
-          </a>
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#"
-          >
-            Contact
-          </a>
-        </nav>
-      </header>
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
@@ -58,15 +22,17 @@ const LandingPage: FC = () => {
                 </p>
               </div>
               <div className="space-x-4">
-                {/* <Button className="bg-black text-white hover:bg-gray-800">
-                  Get Started
-                </Button>
-                <Button variant="outline">Learn More</Button> */}
+                <Link to="/dashboard">
+                  <Button className="bg-black text-white hover:bg-gray-800">
+                    Get Started
+                  </Button>
+                </Link>
+                <Button variant="outline">Learn More</Button>
               </div>
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 rounded-[10px] shadow-custom-shadow">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
               <div className="flex flex-col items-center space-y-4 text-center">
@@ -124,7 +90,7 @@ const LandingPage: FC = () => {
                   </Button>
                 </form>
                 <p className="text-xs text-gray-600">
-                  By signing up, you agree to our{' '}
+                  By signing up, you agree to our{" "}
                   <a className="underline underline-offset-2" href="#">
                     Terms & Conditions
                   </a>
@@ -136,7 +102,7 @@ const LandingPage: FC = () => {
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-gray-300">
         <p className="text-xs text-gray-600">
-          © 2023 w3Balance. All rights reserved.
+          © 2024 w3Balance. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <a className="text-xs hover:underline underline-offset-4" href="#">
@@ -148,7 +114,7 @@ const LandingPage: FC = () => {
         </nav>
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default LandingPage;
+export default LandingPage
