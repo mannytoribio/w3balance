@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowRight, BarChart2, Lock, RefreshCw } from "lucide-react"
+import { ArrowRight, ScrollText, ShieldCheck, Scale } from "lucide-react"
 import { Link } from "react-router-dom"
 import { UnifiedWalletButton } from "@jup-ag/wallet-adapter"
 
@@ -9,15 +9,17 @@ const LandingPage: FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <section className="w-full py-12 md:py-24 lg:py-24 xl:py-48">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Optimize Your Crypto Portfolio
+                  Automatic Porftolio Optimization.
+                  <br /> Easy. Safe. OPOS.
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl">
                   Automated rebalancing for your cryptocurrency investments.
+                  <br />
                   Stay ahead of the market with w3Balance.
                 </p>
               </div>
@@ -32,19 +34,19 @@ const LandingPage: FC = () => {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 rounded-[10px] shadow-custom-shadow">
+        <section className="w-full py-12 md:py-24 lg:py-24 bg-gray-100 rounded-[10px] shadow-custom-shadow">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
               <div className="flex flex-col items-center space-y-4 text-center">
-                <BarChart2 className="h-12 w-12 text-black" />
-                <h2 className="text-2xl font-bold">Smart Allocation</h2>
+                <ScrollText className="h-12 w-12 text-black" />
+                <h2 className="text-2xl font-bold">Smart Contract</h2>
                 <p className="text-gray-600">
-                  Our AI-driven algorithms optimize your portfolio based on
-                  market trends and your risk profile.
+                  Solana's first smart contract driven secure, non-custodial,
+                  allocation management tool.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <RefreshCw className="h-12 w-12 text-black" />
+                <Scale className="h-12 w-12 text-black" />
                 <h2 className="text-2xl font-bold">Automatic Rebalancing</h2>
                 <p className="text-gray-600">
                   Keep your portfolio balanced with automated adjustments,
@@ -52,11 +54,11 @@ const LandingPage: FC = () => {
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <Lock className="h-12 w-12 text-black" />
+                <ShieldCheck className="h-12 w-12 text-black" />
                 <h2 className="text-2xl font-bold">Secure Platform</h2>
                 <p className="text-gray-600">
-                  Your assets are protected with industry-leading security
-                  measures and encryption.
+                  Your assets can only ever be withdrawn to your original
+                  wallet.
                 </p>
               </div>
             </div>

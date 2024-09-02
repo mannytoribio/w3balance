@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { Trash2, Lock, Unlock, Scale } from "lucide-react"
 
 const tokenOptions = [
   { value: "SOL", label: "SOL", color: "#DB1FFF" },
@@ -34,6 +34,7 @@ const initialAllocations = [
     tokenQty: 50,
     targetUsdValue: 5000,
     targetTokenQty: 50,
+    locked: false,
   },
   {
     id: 2,
@@ -43,6 +44,7 @@ const initialAllocations = [
     tokenQty: 1,
     targetUsdValue: 2000,
     targetTokenQty: 1,
+    locked: false,
   },
   {
     id: 3,
@@ -52,6 +54,7 @@ const initialAllocations = [
     tokenQty: 0.05,
     targetUsdValue: 1500,
     targetTokenQty: 0.05,
+    locked: false,
   },
   {
     id: 4,
@@ -61,6 +64,7 @@ const initialAllocations = [
     tokenQty: 1500,
     targetUsdValue: 1500,
     targetTokenQty: 1500,
+    locked: false,
   },
 ]
 
@@ -101,8 +105,35 @@ export default function AllocationTable() {
         tokenQty: 0,
         targetUsdValue: 0,
         targetTokenQty: 0,
+        locked: false,
       },
     ])
+  }
+
+  const toggleLock = (id: number) => {
+    setAllocations(
+      allocations.map((alloc) =>
+        alloc.id === id ? { ...alloc, locked: !alloc.locked } : alloc
+      )
+    )
+  }
+
+  const rebalanceAllocations = () => {
+    const lockedAllocation = allocations
+      .filter((alloc) => alloc.locked)
+      .reduce((sum, alloc) => sum + alloc.allocation, 0)
+
+    const unlockedAllocations = allocations.filter((alloc) => !alloc.locked)
+    const remainingAllocation = 100 - lockedAllocation
+    const equalShare = remainingAllocation / unlockedAllocations.length
+
+    setAllocations(
+      allocations.map((alloc) =>
+        alloc.locked
+          ? alloc
+          : { ...alloc, allocation: Number(equalShare.toFixed(2)) }
+      )
+    )
   }
 
   const fundAllocation = () => {
@@ -187,13 +218,26 @@ export default function AllocationTable() {
               <TableCell>${alloc.targetUsdValue.toLocaleString()}</TableCell>
               <TableCell>{alloc.targetTokenQty}</TableCell>
               <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteRow(alloc.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleLock(alloc.id)}
+                  >
+                    {alloc.locked ? (
+                      <Lock className="h-4 w-4" />
+                    ) : (
+                      <Unlock className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteRow(alloc.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -210,7 +254,16 @@ export default function AllocationTable() {
               ${totalTargetUsdValue.toLocaleString()}
             </TableCell>
             <TableCell></TableCell>
-            <TableCell></TableCell>
+            <TableCell>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={rebalanceAllocations}
+                title="Rebalance allocations"
+              >
+                <Scale className="h-4 w-4" />
+              </Button>
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
