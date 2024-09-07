@@ -3,10 +3,10 @@ pub mod errors;
 pub mod instructions;
 use instructions::{
     add_portfolio_token_allocation::*, create_portfolio::*, deposit_portfolio::*,
-    withdrawal_portfolio::*,
+    rebalance_portfolio::*, withdrawal_portfolio::*,
 };
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9");
 
 #[program]
 pub mod w3balance_contract {
@@ -38,5 +38,9 @@ pub mod w3balance_contract {
         data: WithdrawalPortfolioData,
     ) -> Result<()> {
         handle_withdrawal_portfolio(ctx, data)
+    }
+
+    pub fn rebalance_portfolio(ctx: Context<RebalancePortfolioAccounts>) -> Result<()> {
+        handle_rebalance_portfolio(ctx)
     }
 }

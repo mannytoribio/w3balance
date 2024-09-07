@@ -1,5 +1,4 @@
 import * as anchor from '@project-serum/anchor';
-import { Program } from '@project-serum/anchor';
 import { W3balanceContract } from '../target/types/w3balance_contract';
 import chai, { expect } from 'chai';
 import {
@@ -9,6 +8,12 @@ import {
   mintTo,
 } from '@solana/spl-token';
 import chaiAsPromised from 'chai-as-promised';
+import { PriceServiceConnection } from '@pythnetwork/price-service-client';
+import {
+  InstructionWithEphemeralSigners,
+  PythSolanaReceiver,
+} from '@pythnetwork/pyth-solana-receiver';
+import { Program, Wallet } from '@coral-xyz/anchor';
 
 chai.use(chaiAsPromised);
 
@@ -227,7 +232,7 @@ describe('w3balance-contract', () => {
     expect(portfolioTokenAllocationBalance.value.uiAmount).to.equal(100);
   });
 
-  it.only('Withdraws tokens from Portfolio Token Allocation', async () => {
+  it('Withdraws tokens from Portfolio Token Allocation', async () => {
     const { portfolioAccount, owner } = await createPortfolio(
       'My First Portfolio'
     );
@@ -262,5 +267,65 @@ describe('w3balance-contract', () => {
         ownerTokenAccount.address
       );
     expect(ownerTokenBalance.value.uiAmount).to.equal(100);
+  });
+
+  it.only('Rebalances Portfolio', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
+    );
+    const {
+      mint,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+
+    const SOL_PRICE_FEED_ID =
+      '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d';
+    const priceServiceConnection = new PriceServiceConnection(
+      'https://hermes.pyth.network/',
+      { priceFeedRequestConfig: { binary: true } }
+    );
+
+    const pythSolanaReceiver = new PythSolanaReceiver({
+      connection,
+      wallet: new Wallet(owner),
+    });
+
+    const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
+      closeUpdateAccounts: true,
+    });
+
+    const priceUpdateData = await priceServiceConnection.getLatestVaas([
+      SOL_PRICE_FEED_ID,
+    ]);
+
+    await transactionBuilder.addPostPriceUpdates([priceUpdateData[0]]);
+
+    await transactionBuilder.addPriceConsumerInstructions(
+      async (
+        getPriceUpdateAccount: (priceFeedId: string) => anchor.web3.PublicKey
+      ): Promise<InstructionWithEphemeralSigners[]> => {
+        const instructions = [
+          {
+            instruction: await program.methods
+              .rebalancePortfolio()
+              .accounts({
+                priceUpdate: getPriceUpdateAccount(SOL_PRICE_FEED_ID),
+                portfolioAccount,
+                payer: owner.publicKey,
+              })
+              .instruction(),
+            signers: [owner],
+          },
+        ];
+        return instructions;
+      }
+    );
+    console.log('Submitting Tx');
+    await pythSolanaReceiver.provider.sendAll(
+      await transactionBuilder.buildVersionedTransactions({
+        // computeUnitPriceMicroLamports: 50000,
+      })
+    );
   });
 });

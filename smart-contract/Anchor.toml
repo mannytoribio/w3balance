@@ -2,14 +2,21 @@
 seeds = false
 skip-lint = false
 [programs.localnet]
-w3balance_contract = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
+
+[programs.devnet]
+w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
+
+
+[programs.mainnet]
+w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "Localnet"
-wallet = "/Users/zacharyroberts/.config/solana/id.json"
+wallet = "/Users/zacharyroberts/wallets/poker-dev.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
