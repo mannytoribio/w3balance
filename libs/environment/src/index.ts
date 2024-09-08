@@ -62,9 +62,8 @@ export const getMongoClient = async () => {
       password: await getMongoSecret(),
     }
 
-    // TODO: replace connection string and set up secrets
     _mongoClient = new MongoClient(
-      `mongodb+srv://${creds.username}:${creds.password}@serverlessinstance0.gnjmbie.mongodb.net/?retryWrites=true&w=majority`
+      `mongodb+srv://${creds.username}:${creds.password}@w3balance-db.rt2cm.mongodb.net/?retryWrites=true&w=majority`
     )
     try {
       _mongoClient = await _mongoClient.connect()
