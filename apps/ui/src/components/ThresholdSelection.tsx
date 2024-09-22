@@ -1,8 +1,7 @@
-import React, { useState } from "react"
+import React from "react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -18,13 +17,24 @@ import {
 } from "@/components/ui/tooltip"
 import { InfoIcon } from "lucide-react"
 
-export default function ThresholdSelection() {
-  const [rebalanceType, setRebalanceType] = useState("time")
-  const [timeInterval, setTimeInterval] = useState("monthly")
-  const [threshold, setThreshold] = useState("5")
+type ThresholdSelectionProps = {
+  rebalanceType: string
+  setRebalanceType: (value: string) => void
+  timeInterval: string
+  setTimeInterval: (value: string) => void
+  threshold: string
+  setThreshold: (value: string) => void
+}
 
+export default function ThresholdSelection({
+  rebalanceType,
+  setRebalanceType,
+  timeInterval,
+  setTimeInterval,
+  threshold,
+  setThreshold,
+}: ThresholdSelectionProps) {
   const handleThresholdChange = (value: string) => {
-    // Only allow numbers and limit to two decimal places
     const regex = /^\d*\.?\d{0,2}$/
     if (regex.test(value) || value === "") {
       setThreshold(value)
@@ -38,7 +48,7 @@ export default function ThresholdSelection() {
           Rebalance Options
         </h2>
         <RadioGroup
-          defaultValue={rebalanceType}
+          value={rebalanceType}
           onValueChange={setRebalanceType}
           className="flex flex-col space-y-4 mb-4"
         >
@@ -113,7 +123,6 @@ export default function ThresholdSelection() {
             </div>
           </div>
         )}
-        {/* <Button className="w-full">Save Rebalance Settings</Button> */}
       </div>
     </div>
   )

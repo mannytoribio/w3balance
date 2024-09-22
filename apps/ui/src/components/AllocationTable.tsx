@@ -1,4 +1,3 @@
-import React, { useState } from "react"
 import {
   Table,
   TableBody,
@@ -25,52 +24,28 @@ const tokenOptions = [
   { value: "USDC", label: "USDC", color: "#2774CA" },
 ]
 
-const initialAllocations = [
-  {
-    id: 1,
-    token: "SOL",
-    allocation: 50,
-    usdValue: 5000,
-    tokenQty: 50,
-    targetUsdValue: 5000,
-    targetTokenQty: 50,
-    locked: false,
-  },
-  {
-    id: 2,
-    token: "ETH",
-    allocation: 20,
-    usdValue: 2000,
-    tokenQty: 1,
-    targetUsdValue: 2000,
-    targetTokenQty: 1,
-    locked: false,
-  },
-  {
-    id: 3,
-    token: "BTC",
-    allocation: 15,
-    usdValue: 1500,
-    tokenQty: 0.05,
-    targetUsdValue: 1500,
-    targetTokenQty: 0.05,
-    locked: false,
-  },
-  {
-    id: 4,
-    token: "USDC",
-    allocation: 15,
-    usdValue: 1500,
-    tokenQty: 1500,
-    targetUsdValue: 1500,
-    targetTokenQty: 1500,
-    locked: false,
-  },
-]
+type Allocation = {
+  id: number
+  token: string
+  allocation: number
+  usdValue: number
+  tokenQty: number
+  targetUsdValue: number
+  targetTokenQty: number
+  locked: boolean
+}
 
-export default function AllocationTable() {
-  const [allocations, setAllocations] = useState(initialAllocations)
+type AllocationTableProps = {
+  allocations: Allocation[]
+  setAllocations: (allocations: Allocation[]) => void
+  handleSubmit: () => void
+}
 
+export default function AllocationTable({
+  allocations,
+  setAllocations,
+  handleSubmit,
+}: AllocationTableProps) {
   const handleTokenChange = (id: number, value: string) => {
     setAllocations(
       allocations.map((alloc) =>
@@ -136,10 +111,6 @@ export default function AllocationTable() {
     )
   }
 
-  const fundAllocation = () => {
-    console.log("allocations", allocations)
-  }
-
   const totalAllocation = allocations.reduce(
     (sum, alloc) => sum + alloc.allocation,
     0
@@ -184,9 +155,7 @@ export default function AllocationTable() {
               <TableCell>
                 <Select
                   value={alloc.token}
-                  onValueChange={(value: string) =>
-                    handleTokenChange(alloc.id, value)
-                  }
+                  onValueChange={(value) => handleTokenChange(alloc.id, value)}
                 >
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Select token" />
@@ -269,7 +238,7 @@ export default function AllocationTable() {
       </Table>
       <div className="flex justify-between mt-4">
         <Button onClick={addNewRow}>Add Token</Button>
-        <Button onClick={fundAllocation}>Fund It</Button>
+        <Button onClick={handleSubmit}>Submit</Button> {/* Submit button */}
       </div>
     </div>
   )
