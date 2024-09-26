@@ -16,6 +16,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Trash2, Lock, Unlock, Scale } from "lucide-react"
+import { Label } from "./ui/label"
+import { trpc } from "@/trpc"
 
 const tokenOptions = [
   { value: "SOL", label: "SOL", color: "#DB1FFF" },
@@ -37,15 +39,30 @@ type Allocation = {
 
 type AllocationTableProps = {
   allocations: Allocation[]
+  fundingAmount: number
+  setFundingAmount: (fundingAmount: number) => void
   setAllocations: (allocations: Allocation[]) => void
   handleSubmit: () => void
 }
 
 export default function AllocationTable({
+  fundingAmount,
+  setFundingAmount,
   allocations,
   setAllocations,
   handleSubmit,
 }: AllocationTableProps) {
+  const { data, error, isLoading } = trpc.getPrices.useQuery({
+    tokens: ["SOL", "BTC"],
+    vsToken: "USDC",
+  })
+
+  console.log("token price data", data)
+
+  const handleFundingAmountChange = (value: number) => {
+    setFundingAmount(value)
+  }
+
   const handleTokenChange = (id: number, value: string) => {
     setAllocations(
       allocations.map((alloc) =>
@@ -128,6 +145,23 @@ export default function AllocationTable({
     <div className="p-4 bg-white rounded-lg shadow-custom-shadow">
       <Table>
         <TableHeader>
+          <div className="mb-4 ml-2">
+            <Label htmlFor="threshold-input" className="flex mb-2">
+              Funding Amount
+            </Label>
+            <div className="flex items-center">
+              <Input
+                id="threshold-input"
+                type="text"
+                value={fundingAmount}
+                onChange={(e) =>
+                  handleFundingAmountChange(Number(e.target.value))
+                }
+                className="w-24 mr-2"
+              />
+              <span className="font-semibold">SOL</span>
+            </div>
+          </div>
           <TableRow>
             <TableHead>Key</TableHead>
             <TableHead>Asset</TableHead>
