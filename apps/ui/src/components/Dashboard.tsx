@@ -2,6 +2,10 @@ import React, { useState } from "react"
 import AllocationTable from "./AllocationTable"
 import PortfolioAllocationCharts from "./PortfolioAllocationCharts"
 import ThresholdSelection from "./ThresholdSelection"
+import { getProgram, useProvider } from "@/contract"
+import { PublicKey } from "@solana/web3.js"
+import { utils } from "@project-serum/anchor"
+import { useWallet } from "@jup-ag/wallet-adapter"
 
 export default function Dashboard() {
   const initialAllocations = [
@@ -48,19 +52,47 @@ export default function Dashboard() {
   ]
 
   const [rebalanceType, setRebalanceType] = useState("time")
+  const [portfolioName, setPortfolioName] = useState("My First Portfolio")
   const [timeInterval, setTimeInterval] = useState("monthly")
   const [threshold, setThreshold] = useState("5")
-  const [allocations, setAllocations] = useState(initialAllocations) // Initialize as needed
+  const [allocations, setAllocations] = useState(initialAllocations)
+  const { provider } = useProvider()!
+  const wallet = useWallet()
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const data = {
       rebalanceType,
       threshold,
       timeInterval,
       allocations,
+      portfolioName,
     }
-    console.log("Data for submission:", data)
-    // Handle submission logic here (e.g., API call)
+    const program = await getProgram(provider)
+    const [portfolioAccount] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(utils.bytes.utf8.encode("portfolio")),
+        wallet.publicKey!.toBuffer(),
+        Buffer.from(utils.bytes.utf8.encode(portfolioName)),
+      ],
+      program.programId
+    )
+
+    console.log("Portfolio account:", portfolioAccount)
+    const instruction = await program.methods
+      .createPortfolio({
+        uniqueName: portfolioName,
+      })
+      .accounts({
+        payer: provider.wallet.publicKey!,
+        portfolioAccount,
+      })
+      .transaction()
+
+    console.log("instruction:", instruction)
+
+    const ret = await wallet.sendTransaction(instruction, provider.connection)
+
+    console.log("Data for submission ret:", ret)
   }
 
   return (

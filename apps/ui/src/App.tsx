@@ -14,7 +14,8 @@ function App() {
       wallets={[]}
       config={{
         autoConnect: false,
-        env: "mainnet-beta",
+        env: "devnet",
+        // env: "mainnet-beta",
         metadata: {
           name: "UnifiedWallet",
           description: "UnifiedWallet",
