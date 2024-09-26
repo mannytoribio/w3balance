@@ -1,15 +1,26 @@
+[toolchain]
+
 [features]
 seeds = false
 skip-lint = false
 [programs.localnet]
-w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
+w3balance_contract = "46gecgivx6mbKb7gfZFVjBGbBgR1n91NEj3naj2LrF8u"
+raydium_cp_swap = "CpMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
 
-[programs.devnet]
-w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
+[test.validator]
+url = "https://api.mainnet-beta.solana.com"
 
+# cp-swap program in mainnet
+[[test.validator.clone]]
+address = "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C"
 
-[programs.mainnet]
-w3balance_contract = "w3b45toDy6MDc1e3TE81DEefEmU3tFDuDQeJek7Wck9"
+# cp-swap create_pool_fee_reveiver in mainnet
+[[test.validator.clone]]
+address = "DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8"
+
+# cp-swap ammConfig in mainnet
+[[test.validator.clone]]
+address = "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2"
 
 [registry]
 url = "https://api.apr.dev"

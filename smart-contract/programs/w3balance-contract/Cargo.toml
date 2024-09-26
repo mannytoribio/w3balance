@@ -16,7 +16,10 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.28.0"
-anchor-spl = "0.28.0"
-solana-program = "1.14"
-ahash = "=0.8.6"
+anchor-lang = "=0.29.0"
+anchor-spl = "=0.29.0"
+raydium-cp-swap = { git = "https://github.com/raydium-io/raydium-cp-swap", features = [
+    "no-entrypoint",
+    "cpi",
+] }
+solana-program = "=1.17.0"

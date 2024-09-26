@@ -7,13 +7,14 @@ pub struct CreatePortfolioAccounts<'info> {
     #[account(
         init,
         payer = payer,
-        space = 36 + 32,
+        space = 36 + 32 + 32,
         seeds = [b"portfolio".as_ref(), payer.key().as_ref(), unique_name.as_ref()],
         bump
     )]
     pub portfolio_account: Account<'info, Portfolio>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    /// CHECK: The account that will crank and rebalance;
     pub delegated_rebalance_address: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,

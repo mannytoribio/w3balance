@@ -6,20 +6,25 @@ import {
   getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
   mintTo,
+  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import chaiAsPromised from 'chai-as-promised';
-import { PriceServiceConnection } from '@pythnetwork/price-service-client';
-import {
-  InstructionWithEphemeralSigners,
-  PythSolanaReceiver,
-} from '@pythnetwork/pyth-solana-receiver';
-import { Program, Wallet } from '@coral-xyz/anchor';
+import { Program, Wallet, web3 } from '@coral-xyz/anchor';
+import { configAddress } from './config';
+import { initialize } from './util';
+import { BN } from 'bn.js';
+import {} from '@raydium-io/raydium-sdk-v2';
+
+const confirmOptions = {
+  skipPreflight: true,
+};
 
 chai.use(chaiAsPromised);
 
 // Configure the client to use the local cluster.
 anchor.setProvider(anchor.AnchorProvider.env());
 
+console.log(anchor.workspace.RaydiumCpSwap);
 const program = anchor.workspace
   .W3BalanceContract as Program<W3balanceContract>;
 
@@ -37,17 +42,19 @@ const createPortfolio = async (uniqueName: string) => {
   );
   const airdropTx = await connection.requestAirdrop(
     owner.publicKey,
-    2000000000
+    2 * web3.LAMPORTS_PER_SOL
   );
   await connection.confirmTransaction(airdropTx);
 
   await program.methods
     .createPortfolio({
       uniqueName: uniqueName,
+      delegatedRebalanceAddress: owner.publicKey,
     })
     .accounts({
       portfolioAccount,
       payer: owner.publicKey,
+      delegatedRebalanceAddress: owner.publicKey,
     })
     .signers([owner])
     .rpc();
@@ -88,6 +95,23 @@ const addPortfolioTokenAllocation = async (
     true
   );
 
+  const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(
+    connection,
+    owner,
+    mint,
+    owner.publicKey,
+    true
+  );
+
+  await mintTo(
+    connection,
+    owner,
+    mint,
+    ownerTokenAccount.address,
+    owner,
+    100_000_000_000_000
+  );
+
   await program.methods
     .addPortfolioTokenAllocation({
       tokenMint: mint,
@@ -107,6 +131,7 @@ const addPortfolioTokenAllocation = async (
     mint,
     portfolioTokenAllocationTokenAccount,
     portfolioTokenAllocationAccount,
+    ownerTokenAccount,
   };
 };
 
@@ -176,7 +201,7 @@ const withdrawalPortfolio = async (
 };
 
 describe('w3balance-contract', () => {
-  it('Creates a Portfolio', async () => {
+  it.only('Creates a Portfolio', async () => {
     const uniqueName = 'My First Portfolio';
     const { portfolioAccount } = await createPortfolio(uniqueName);
     const portfolio = await program.account.portfolio.fetch(portfolioAccount);
@@ -277,55 +302,26 @@ describe('w3balance-contract', () => {
       mint,
       portfolioTokenAllocationAccount,
       portfolioTokenAllocationTokenAccount,
+      ownerTokenAccount,
     } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
-
-    const SOL_PRICE_FEED_ID =
-      '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d';
-    const priceServiceConnection = new PriceServiceConnection(
-      'https://hermes.pyth.network/',
-      { priceFeedRequestConfig: { binary: true } }
+    const {
+      mint: mint2,
+      portfolioTokenAllocationAccount: portfolioTokenAllocationAccount2,
+      portfolioTokenAllocationTokenAccount:
+        portfolioTokenAllocationTokenAccount2,
+      ownerTokenAccount: ownerTokenAccount2,
+    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+    const { cpSwapPoolState } = await initialize(
+      program,
+      owner,
+      configAddress,
+      mint,
+      TOKEN_PROGRAM_ID,
+      mint2,
+      TOKEN_PROGRAM_ID,
+      confirmOptions
     );
 
-    const pythSolanaReceiver = new PythSolanaReceiver({
-      connection,
-      wallet: new Wallet(owner),
-    });
-
-    const transactionBuilder = pythSolanaReceiver.newTransactionBuilder({
-      closeUpdateAccounts: true,
-    });
-
-    const priceUpdateData = await priceServiceConnection.getLatestVaas([
-      SOL_PRICE_FEED_ID,
-    ]);
-
-    await transactionBuilder.addPostPriceUpdates([priceUpdateData[0]]);
-
-    await transactionBuilder.addPriceConsumerInstructions(
-      async (
-        getPriceUpdateAccount: (priceFeedId: string) => anchor.web3.PublicKey
-      ): Promise<InstructionWithEphemeralSigners[]> => {
-        const instructions = [
-          {
-            instruction: await program.methods
-              .rebalancePortfolio()
-              .accounts({
-                priceUpdate: getPriceUpdateAccount(SOL_PRICE_FEED_ID),
-                portfolioAccount,
-                payer: owner.publicKey,
-              })
-              .instruction(),
-            signers: [owner],
-          },
-        ];
-        return instructions;
-      }
-    );
-    console.log('Submitting Tx');
-    await pythSolanaReceiver.provider.sendAll(
-      await transactionBuilder.buildVersionedTransactions({
-        // computeUnitPriceMicroLamports: 50000,
-      })
-    );
+    // await program.methods.rebalancePortfolio(new BN(100), new BN(100)).accounts({
   });
 });

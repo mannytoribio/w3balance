@@ -1,5 +1,5 @@
-import { UnifiedWalletButton } from "@jup-ag/wallet-adapter"
-import { Link } from "react-router-dom"
+import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
+import { Link } from 'react-router-dom';
 
 export default function Navbar() {
   return (
@@ -36,5 +36,5 @@ export default function Navbar() {
         <UnifiedWalletButton />
       </nav>
     </header>
-  )
+  );
 }
