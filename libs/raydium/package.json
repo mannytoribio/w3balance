@@ -1,0 +1,23 @@
+{
+  "name": "@libs/raydium",
+  "version": "0.1.0",
+  "description": "Environment & Secrets",
+  "author": "manny.mtoribio@gmail.com",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint ./",
+    "test": "echo \"No tests\"",
+    "test:unit": "echo \"No tests\"",
+    "test:integration": "echo \"No Integration Tests\""
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@project-serum/anchor": "^0.26.0",
+    "@raydium-io/raydium-sdk-v2": "^0.1.68-alpha",
+    "@solana/spl-token": "^0.4.8",
+    "@types/bn.js": "^5.1.0",
+    "ts-node": "^10.9.2"
+  }
+}

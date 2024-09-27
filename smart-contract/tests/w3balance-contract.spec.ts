@@ -10,10 +10,6 @@ import {
 } from '@solana/spl-token';
 import chaiAsPromised from 'chai-as-promised';
 import { Program, Wallet, web3 } from '@coral-xyz/anchor';
-import { configAddress } from './config';
-import { initialize } from './util';
-import { BN } from 'bn.js';
-import {} from '@raydium-io/raydium-sdk-v2';
 
 const confirmOptions = {
   skipPreflight: true,
@@ -201,7 +197,7 @@ const withdrawalPortfolio = async (
 };
 
 describe('w3balance-contract', () => {
-  it.only('Creates a Portfolio', async () => {
+  it('Creates a Portfolio', async () => {
     const uniqueName = 'My First Portfolio';
     const { portfolioAccount } = await createPortfolio(uniqueName);
     const portfolio = await program.account.portfolio.fetch(portfolioAccount);
@@ -292,36 +288,5 @@ describe('w3balance-contract', () => {
         ownerTokenAccount.address
       );
     expect(ownerTokenBalance.value.uiAmount).to.equal(100);
-  });
-
-  it.only('Rebalances Portfolio', async () => {
-    const { portfolioAccount, owner } = await createPortfolio(
-      'My First Portfolio'
-    );
-    const {
-      mint,
-      portfolioTokenAllocationAccount,
-      portfolioTokenAllocationTokenAccount,
-      ownerTokenAccount,
-    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
-    const {
-      mint: mint2,
-      portfolioTokenAllocationAccount: portfolioTokenAllocationAccount2,
-      portfolioTokenAllocationTokenAccount:
-        portfolioTokenAllocationTokenAccount2,
-      ownerTokenAccount: ownerTokenAccount2,
-    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
-    const { cpSwapPoolState } = await initialize(
-      program,
-      owner,
-      configAddress,
-      mint,
-      TOKEN_PROGRAM_ID,
-      mint2,
-      TOKEN_PROGRAM_ID,
-      confirmOptions
-    );
-
-    // await program.methods.rebalancePortfolio(new BN(100), new BN(100)).accounts({
   });
 });
