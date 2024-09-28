@@ -8,7 +8,12 @@ use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
 pub struct DepositPortfolioAccounts<'info> {
     #[account(
         mut,
-        seeds = [b"portfolio_token_allocation".as_ref(), portfolio_account.owner.key().as_ref(), portfolio_token_allocation_account.token_mint.key().as_ref()],
+        seeds = [
+            b"portfolio_token_allocation".as_ref(), 
+            portfolio_account.key().as_ref(),
+            portfolio_account.owner.key().as_ref(), 
+            portfolio_token_allocation_account.token_mint.key().as_ref()
+            ],
         bump
     )]
     pub portfolio_token_allocation_account: Account<'info, PortfolioTokenAllocation>,

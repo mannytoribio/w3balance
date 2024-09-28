@@ -103,8 +103,8 @@ const pools = [
 
   // for (let i = 0; i < mints.length; i++) {
   //   for (let j = 1; j < mints.length; j++) {
-  const mint1 = new PublicKey(mints[3]);
-  const mint2 = new PublicKey(mints[4]);
+  // const mint1 = new PublicKey(mints[3]);
+  // const mint2 = new PublicKey(mints[4]);
   // const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(
   //   connection,
   //   owner,
@@ -121,23 +121,23 @@ const pools = [
   //   owner,
   //   100_000_000_000_000_000_000
   // );
-  const poolId = await createPool(owner, connection, mint1, mint2);
+  // const poolId = await createPool(owner, connection, mint1, mint2);
 
-  console.log(
-    'Created',
-    poolId,
-    'between',
-    mint1.toString(),
-    'and',
-    mint2.toString()
-  );
+  // console.log(
+  //   'Created',
+  //   poolId,
+  //   'between',
+  //   mint1.toString(),
+  //   'and',
+  //   mint2.toString()
+  // );
 
-  await deposit(
-    owner,
-    connection,
-    'GfxHgi63Vs4vT2qVtr1FoP4TL1HL5utStmDdgSPaxgZi',
-    '100'
-  );
+  // await deposit(
+  //   owner,
+  //   connection,
+  //   'GfxHgi63Vs4vT2qVtr1FoP4TL1HL5utStmDdgSPaxgZi',
+  //   '100'
+  // );
   // }
   // }
 
@@ -158,4 +158,24 @@ const pools = [
   //   new PublicKey(pools[0].tokens[0]),
   //   1 * 10 ** 9
   // );
+
+  const to = new PublicKey('2Yj5CpWrcn1AVd165iVE9LhzkgJPmikp6YKjkdDPKc7b');
+  for (const mint of mints) {
+    const tokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      owner,
+      new PublicKey(mint),
+      to,
+      true
+    );
+    await mintTo(
+      connection,
+      owner,
+      new PublicKey(mint),
+      tokenAccount.address,
+      owner,
+      100_000_000_000_000
+    );
+    console.log('Minted to', tokenAccount.address.toBase58());
+  }
 })();

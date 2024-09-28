@@ -12,7 +12,7 @@ pub struct AddPortfolioTokenAllocationAccounts<'info> {
     #[account(
         init,
         payer = payer,
-        space = 32 + 1 + 8,
+        space = 32 + 1 + 8 + 10,
         seeds = [
         b"portfolio_token_allocation".as_ref(),
         portfolio_account.key().as_ref(),

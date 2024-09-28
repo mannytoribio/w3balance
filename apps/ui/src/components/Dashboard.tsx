@@ -11,6 +11,7 @@ import {
 import { utils } from '@project-serum/anchor';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
+import * as anchor from '@project-serum/anchor';
 
 const mints = [
   '6EQssH3g3sjxredCgJoumxB8duVsxJ2u8JHB3zwF1n11',
@@ -140,9 +141,50 @@ export default function Dashboard() {
       );
     }
 
+    const ownerTokenAccount = getAssociatedTokenAddressSync(
+      // we are treating the first token as the deposit or basically USDC;
+      // we have an expectation that they have a token account already, if they don't we should throw an error;
+      new PublicKey(mints[0]),
+      wallet.publicKey!,
+      false
+    );
+    const [portfolioTokenAllocationAccount] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(utils.bytes.utf8.encode('portfolio_token_allocation')),
+        portfolioAccount.toBuffer(),
+        wallet.publicKey!.toBuffer(),
+        new PublicKey(mints[0]).toBuffer(),
+      ],
+      program.programId
+    );
+    const portfolioTokenAllocationTokenAccount = getAssociatedTokenAddressSync(
+      new PublicKey(mints[0]),
+      portfolioAccount,
+      true
+    );
+    const depositInstruction = await program.methods
+      .depositPortfolio({
+        amount: new anchor.BN(10 * 10 ** 9),
+      })
+      .accounts({
+        portfolioAccount,
+        payer: wallet.publicKey!,
+        payerTokenAccount: ownerTokenAccount,
+        portfolioTokenAllocationAccount,
+        portfolioTokenAllocationTokenAccount,
+      })
+      .instruction();
+
     const ret = await wallet.sendTransaction(
-      new Transaction().add(createPortfolioInstruction, ...mintInstructions),
-      provider.connection
+      new Transaction().add(
+        createPortfolioInstruction,
+        ...mintInstructions,
+        depositInstruction
+      ),
+      provider.connection,
+      {
+        skipPreflight: true,
+      }
     );
     console.log('what the fuck?');
     console.log('Data for submission ret:', ret);

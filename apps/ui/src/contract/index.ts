@@ -48,5 +48,3 @@ export const getProgram = async (provider: AnchorProvider) => {
     provider
   ) as unknown as Program<W3balanceContract>;
 };
-
-// TODO: export function that creates porfolio
