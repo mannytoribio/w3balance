@@ -3,7 +3,11 @@ import AllocationTable from './AllocationTable';
 import PortfolioAllocationCharts from './PortfolioAllocationCharts';
 import ThresholdSelection from './ThresholdSelection';
 import { getProgram, useProvider } from '@/contract';
-import { PublicKey, Transaction } from '@solana/web3.js';
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import { utils } from '@project-serum/anchor';
 import { useWallet } from '@jup-ag/wallet-adapter';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
@@ -62,7 +66,7 @@ export default function Dashboard() {
 
   const [rebalanceType, setRebalanceType] = useState('time');
   const [portfolioName, setPortfolioName] = useState(
-    new Date().toISOString().slice(0, 5)
+    (Math.random() + 1).toString(36).substring(7)
   );
   const [timeInterval, setTimeInterval] = useState('monthly');
   const [threshold, setThreshold] = useState('5');
@@ -89,8 +93,8 @@ export default function Dashboard() {
       program.programId
     );
 
-    console.log('Portfolio account:', portfolioAccount);
-    let createPortfolioInstruction = await program.methods
+    console.log('Portfolio account:', portfolioAccount.toString());
+    const createPortfolioInstruction = await program.methods
       .createPortfolio({
         uniqueName: portfolioName,
         delegatedRebalanceAddress: wallet.publicKey!,
@@ -100,9 +104,9 @@ export default function Dashboard() {
         portfolioAccount,
         delegatedRebalanceAddress: wallet.publicKey!,
       })
-      .transaction();
-
-    for (const mint of mints.slice(0, 1)) {
+      .instruction();
+    const mintInstructions: TransactionInstruction[] = [];
+    for (const mint of mints) {
       const [portfolioTokenAllocationAccount] =
         PublicKey.findProgramAddressSync(
           [
@@ -116,34 +120,29 @@ export default function Dashboard() {
       const portfolioTokenAllocationTokenAccount =
         getAssociatedTokenAddressSync(
           new PublicKey(mint),
-          portfolioTokenAllocationAccount,
+          portfolioAccount,
           true
         );
-      const createPortfolioTokenAllocationInstruction = await program.methods
-        .addPortfolioTokenAllocation({
-          percentage: 20,
-          tokenMint: new PublicKey(mint),
-        })
-        .accounts({
-          payer: wallet.publicKey!,
-          portfolioTokenAllocationAccount,
-          portfolioAccount,
-          mintAccount: new PublicKey(mint),
-          portfolioTokenAllocationTokenAccount,
-        })
-        .instruction();
-      createPortfolioInstruction = createPortfolioInstruction.add(
-        createPortfolioTokenAllocationInstruction
+      mintInstructions.push(
+        await program.methods
+          .addPortfolioTokenAllocation({
+            percentage: 20,
+            tokenMint: new PublicKey(mint),
+          })
+          .accounts({
+            payer: wallet.publicKey!,
+            portfolioTokenAllocationAccount,
+            portfolioAccount,
+            mintAccount: new PublicKey(mint),
+            portfolioTokenAllocationTokenAccount,
+          })
+          .instruction()
       );
     }
 
-    console.log('instruction:', createPortfolioInstruction);
     const ret = await wallet.sendTransaction(
-      createPortfolioInstruction,
-      provider.connection,
-      {
-        skipPreflight: true,
-      }
+      new Transaction().add(createPortfolioInstruction, ...mintInstructions),
+      provider.connection
     );
     console.log('what the fuck?');
     console.log('Data for submission ret:', ret);
