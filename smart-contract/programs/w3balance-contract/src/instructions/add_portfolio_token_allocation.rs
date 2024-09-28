@@ -13,7 +13,12 @@ pub struct AddPortfolioTokenAllocationAccounts<'info> {
         init,
         payer = payer,
         space = 32 + 1 + 8,
-        seeds = [b"portfolio_token_allocation".as_ref(), portfolio_account.owner.key().as_ref(), mint_account.key().as_ref()],
+        seeds = [
+        b"portfolio_token_allocation".as_ref(),
+        portfolio_account.key().as_ref(),
+        portfolio_account.owner.key().as_ref(), 
+        mint_account.key().as_ref()
+        ],
         bump
     )]
     pub portfolio_token_allocation_account: Account<'info, PortfolioTokenAllocation>,

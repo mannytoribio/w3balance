@@ -5,45 +5,44 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Trash2, Lock, Unlock, Scale } from "lucide-react"
-import { Label } from "./ui/label"
-import { trpc } from "@/trpc"
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Trash2, Lock, Unlock, Scale } from 'lucide-react';
+import { Label } from './ui/label';
 
 const tokenOptions = [
-  { value: "SOL", label: "SOL", color: "#DB1FFF" },
-  { value: "ETH", label: "ETH", color: "#FFEE5F" },
-  { value: "BTC", label: "BTC", color: "#FE9415" },
-  { value: "USDC", label: "USDC", color: "#2774CA" },
-]
+  { value: 'SOL', label: 'SOL', color: '#DB1FFF' },
+  { value: 'ETH', label: 'ETH', color: '#FFEE5F' },
+  { value: 'BTC', label: 'BTC', color: '#FE9415' },
+  { value: 'USDC', label: 'USDC', color: '#2774CA' },
+];
 
 type Allocation = {
-  id: number
-  token: string
-  allocation: number
-  usdValue: number
-  tokenQty: number
-  targetUsdValue: number
-  targetTokenQty: number
-  locked: boolean
-}
+  id: number;
+  token: string;
+  allocation: number;
+  usdValue: number;
+  tokenQty: number;
+  targetUsdValue: number;
+  targetTokenQty: number;
+  locked: boolean;
+};
 
 type AllocationTableProps = {
-  allocations: Allocation[]
-  fundingAmount: number
-  setFundingAmount: (fundingAmount: number) => void
-  setAllocations: (allocations: Allocation[]) => void
-  handleSubmit: () => void
-}
+  allocations: Allocation[];
+  fundingAmount: number;
+  setFundingAmount: (fundingAmount: number) => void;
+  setAllocations: (allocations: Allocation[]) => void;
+  handleSubmit: () => void;
+};
 
 export default function AllocationTable({
   fundingAmount,
@@ -52,46 +51,46 @@ export default function AllocationTable({
   setAllocations,
   handleSubmit,
 }: AllocationTableProps) {
-  const { data, error, isLoading } = trpc.getPrices.useQuery({
-    tokens: ["SOL", "BTC"],
-    vsToken: "USDC",
-  })
+  // const { data, error, isLoading } = trpc.getPrices.useQuery({
+  //   tokens: ["SOL", "BTC"],
+  //   vsToken: "USDC",
+  // })
 
-  console.log("token price data", data)
+  // console.log('token price data', data);
 
   const handleFundingAmountChange = (value: number) => {
-    setFundingAmount(value)
-  }
+    setFundingAmount(value);
+  };
 
   const handleTokenChange = (id: number, value: string) => {
     setAllocations(
       allocations.map((alloc) =>
         alloc.id === id ? { ...alloc, token: value } : alloc
       )
-    )
-  }
+    );
+  };
 
   const handleAllocationChange = (id: number, value: string) => {
-    const newValue = parseFloat(value)
-    if (isNaN(newValue)) return
+    const newValue = parseFloat(value);
+    if (isNaN(newValue)) return;
     setAllocations(
       allocations.map((alloc) =>
         alloc.id === id ? { ...alloc, allocation: newValue } : alloc
       )
-    )
-  }
+    );
+  };
 
   const handleDeleteRow = (id: number) => {
-    setAllocations(allocations.filter((alloc) => alloc.id !== id))
-  }
+    setAllocations(allocations.filter((alloc) => alloc.id !== id));
+  };
 
   const addNewRow = () => {
-    const newId = Math.max(...allocations.map((a) => a.id)) + 1
+    const newId = Math.max(...allocations.map((a) => a.id)) + 1;
     setAllocations([
       ...allocations,
       {
         id: newId,
-        token: "",
+        token: '',
         allocation: 0,
         usdValue: 0,
         tokenQty: 0,
@@ -99,25 +98,25 @@ export default function AllocationTable({
         targetTokenQty: 0,
         locked: false,
       },
-    ])
-  }
+    ]);
+  };
 
   const toggleLock = (id: number) => {
     setAllocations(
       allocations.map((alloc) =>
         alloc.id === id ? { ...alloc, locked: !alloc.locked } : alloc
       )
-    )
-  }
+    );
+  };
 
   const rebalanceAllocations = () => {
     const lockedAllocation = allocations
       .filter((alloc) => alloc.locked)
-      .reduce((sum, alloc) => sum + alloc.allocation, 0)
+      .reduce((sum, alloc) => sum + alloc.allocation, 0);
 
-    const unlockedAllocations = allocations.filter((alloc) => !alloc.locked)
-    const remainingAllocation = 100 - lockedAllocation
-    const equalShare = remainingAllocation / unlockedAllocations.length
+    const unlockedAllocations = allocations.filter((alloc) => !alloc.locked);
+    const remainingAllocation = 100 - lockedAllocation;
+    const equalShare = remainingAllocation / unlockedAllocations.length;
 
     setAllocations(
       allocations.map((alloc) =>
@@ -125,21 +124,21 @@ export default function AllocationTable({
           ? alloc
           : { ...alloc, allocation: Number(equalShare.toFixed(2)) }
       )
-    )
-  }
+    );
+  };
 
   const totalAllocation = allocations.reduce(
     (sum, alloc) => sum + alloc.allocation,
     0
-  )
+  );
   const totalUsdValue = allocations.reduce(
     (sum, alloc) => sum + alloc.usdValue,
     0
-  )
+  );
   const totalTargetUsdValue = allocations.reduce(
     (sum, alloc) => sum + alloc.targetUsdValue,
     0
-  )
+  );
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-custom-shadow">
@@ -182,7 +181,7 @@ export default function AllocationTable({
                   style={{
                     backgroundColor:
                       tokenOptions.find((t) => t.value === alloc.token)
-                        ?.color || "#CCCCCC",
+                        ?.color || '#CCCCCC',
                   }}
                 />
               </TableCell>
@@ -275,5 +274,5 @@ export default function AllocationTable({
         <Button onClick={handleSubmit}>Submit</Button> {/* Submit button */}
       </div>
     </div>
-  )
+  );
 }

@@ -80,6 +80,7 @@ const addPortfolioTokenAllocation = async (
         Buffer.from(
           anchor.utils.bytes.utf8.encode('portfolio_token_allocation')
         ),
+        portfolioAccount.toBuffer(),
         owner.publicKey.toBuffer(),
         mint.toBuffer(),
       ],
@@ -204,7 +205,7 @@ describe('w3balance-contract', () => {
     expect(portfolio.uniqueName === uniqueName);
   });
 
-  it('Adds a Portfolio Token Allocation', async () => {
+  it.only('Adds a Portfolio Token Allocation', async () => {
     const { portfolioAccount, owner } = await createPortfolio(
       'My First Portfolio'
     );
