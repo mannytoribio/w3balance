@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -19,10 +20,45 @@ import { Trash2, Lock, Unlock, Scale } from "lucide-react"
 import { Label } from "./ui/label"
 
 const tokenOptions = [
-  { value: "SOL", label: "SOL", color: "#DB1FFF" },
-  { value: "ETH", label: "ETH", color: "#FFEE5F" },
-  { value: "BTC", label: "BTC", color: "#FE9415" },
-  { value: "USDC", label: "USDC", color: "#2774CA" },
+  { value: "SOL", label: "SOL", color: "#DB1FFF", price: 150 },
+  { value: "ETH", label: "ETH", color: "#FFEE5F", price: 2475 },
+  { value: "BTC", label: "BTC", color: "#FE9415", price: 61000 },
+  { value: "USDC", label: "USDC", color: "#2774CA", price: 1 },
+]
+
+const initialAllocations = [
+  {
+    id: 1,
+    token: "SOL",
+    allocation: 25,
+    usdValue: 0,
+    tokenQty: 0,
+    locked: false,
+  },
+  {
+    id: 2,
+    token: "ETH",
+    allocation: 25,
+    usdValue: 0,
+    tokenQty: 0,
+    locked: false,
+  },
+  {
+    id: 3,
+    token: "BTC",
+    allocation: 25,
+    usdValue: 0,
+    tokenQty: 0,
+    locked: false,
+  },
+  {
+    id: 4,
+    token: "USDC",
+    allocation: 25,
+    usdValue: 0,
+    tokenQty: 0,
+    locked: false,
+  },
 ]
 
 type Allocation = {
@@ -31,17 +67,15 @@ type Allocation = {
   allocation: number
   usdValue: number
   tokenQty: number
-  targetUsdValue: number
-  targetTokenQty: number
   locked: boolean
   mintId: string
 }
 
-type AllocationTableProps = {
-  allocations: Allocation[]
+interface AllocationTableProps {
   fundingAmount: number
-  setFundingAmount: (fundingAmount: number) => void
-  setAllocations: (allocations: Allocation[]) => void
+  setFundingAmount: React.Dispatch<React.SetStateAction<number>>
+  allocations: Allocation[]
+  setAllocations: React.Dispatch<React.SetStateAction<Allocation[]>>
   handleSubmit: () => void
 }
 
@@ -52,15 +86,26 @@ export default function AllocationTable({
   setAllocations,
   handleSubmit,
 }: AllocationTableProps) {
-  // const { data, error, isLoading } = trpc.getPrices.useQuery({
-  //   tokens: ["SOL", "BTC"],
-  //   vsToken: "USDC",
-  // })
+  useEffect(() => {
+    updateAllocations()
+  }, [fundingAmount])
 
-  // console.log('token price data', data);
-
-  const handleFundingAmountChange = (value: number) => {
-    setFundingAmount(value)
+  const updateAllocations = () => {
+    setAllocations((prevAllocations) =>
+      prevAllocations.map((alloc) => {
+        const tokenPrice =
+          tokenOptions.find((t) => t.value === alloc.token)?.price || 0
+        const targetUsdValue = (alloc.allocation / 100) * fundingAmount
+        const targetTokenQty = targetUsdValue / tokenPrice
+        return {
+          ...alloc,
+          targetUsdValue,
+          targetTokenQty,
+          usdValue: targetUsdValue,
+          tokenQty: targetTokenQty,
+        }
+      })
+    )
   }
 
   const handleTokenChange = (id: number, value: string) => {
@@ -69,6 +114,7 @@ export default function AllocationTable({
         alloc.id === id ? { ...alloc, token: value } : alloc
       )
     )
+    updateAllocations()
   }
 
   const handleAllocationChange = (id: number, value: string) => {
@@ -79,6 +125,7 @@ export default function AllocationTable({
         alloc.id === id ? { ...alloc, allocation: newValue } : alloc
       )
     )
+    updateAllocations()
   }
 
   const handleDeleteRow = (id: number) => {
@@ -91,14 +138,12 @@ export default function AllocationTable({
       ...allocations,
       {
         id: newId,
+        mintId: "",
         token: "",
         allocation: 0,
         usdValue: 0,
         tokenQty: 0,
-        targetUsdValue: 0,
-        targetTokenQty: 0,
         locked: false,
-        mintId: "",
       },
     ])
   }
@@ -127,6 +172,7 @@ export default function AllocationTable({
           : { ...alloc, allocation: Number(equalShare.toFixed(2)) }
       )
     )
+    updateAllocations()
   }
 
   const totalAllocation = allocations.reduce(
@@ -137,41 +183,33 @@ export default function AllocationTable({
     (sum, alloc) => sum + alloc.usdValue,
     0
   )
-  const totalTargetUsdValue = allocations.reduce(
-    (sum, alloc) => sum + alloc.targetUsdValue,
-    0
-  )
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-custom-shadow">
+      <div className="mb-4 ml-2">
+        <Label htmlFor="threshold-input" className="flex mb-2">
+          Funding Amount
+        </Label>
+        <div className="flex items-center">
+          <Input
+            id="threshold-input"
+            type="number"
+            value={fundingAmount}
+            onChange={(e) => setFundingAmount(Number(e.target.value))}
+            className="w-24 mr-2"
+          />
+          <span className="font-semibold">USDC</span>
+        </div>
+      </div>
       <Table>
         <TableHeader>
-          <div className="mb-4 ml-2">
-            <Label htmlFor="threshold-input" className="flex mb-2">
-              Funding Amount
-            </Label>
-            <div className="flex items-center">
-              <Input
-                id="threshold-input"
-                type="text"
-                value={fundingAmount}
-                onChange={(e) =>
-                  handleFundingAmountChange(Number(e.target.value))
-                }
-                className="w-24 mr-2"
-              />
-              <span className="font-semibold">USDC</span>
-            </div>
-          </div>
           <TableRow>
             <TableHead>Key</TableHead>
             <TableHead>Asset</TableHead>
             <TableHead>Target %</TableHead>
             <TableHead>USD Value</TableHead>
             <TableHead>Token Qty</TableHead>
-            <TableHead>Target USD Value</TableHead>
-            <TableHead>Target Token Qty</TableHead>
-            <TableHead>Action</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -190,7 +228,9 @@ export default function AllocationTable({
               <TableCell>
                 <Select
                   value={alloc.token}
-                  onValueChange={(value) => handleTokenChange(alloc.id, value)}
+                  onValueChange={(value: string) =>
+                    handleTokenChange(alloc.id, value)
+                  }
                 >
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Select token" />
@@ -213,14 +253,19 @@ export default function AllocationTable({
                       handleAllocationChange(alloc.id, e.target.value)
                     }
                     className="w-20 mr-2"
+                    disabled={alloc.locked}
                   />
                   <span>%</span>
                 </div>
               </TableCell>
-              <TableCell>${alloc.usdValue.toLocaleString()}</TableCell>
-              <TableCell>{alloc.tokenQty}</TableCell>
-              <TableCell>${alloc.targetUsdValue.toLocaleString()}</TableCell>
-              <TableCell>{alloc.targetTokenQty}</TableCell>
+              <TableCell className="text-start">
+                ${alloc.usdValue.toLocaleString()}
+              </TableCell>
+              <TableCell className="text-start">
+                {alloc.tokenQty.toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                })}
+              </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   <Button
@@ -246,19 +291,17 @@ export default function AllocationTable({
             </TableRow>
           ))}
           <TableRow>
-            <TableCell colSpan={2} className="font-bold">
+            <TableCell colSpan={2} className="font-bold text-start">
               Total
             </TableCell>
-            <TableCell className="font-bold">{totalAllocation}%</TableCell>
-            <TableCell className="font-bold">
+            <TableCell className="font-bold text-start">
+              {totalAllocation.toFixed(2)}%
+            </TableCell>
+            <TableCell className="font-bold text-start">
               ${totalUsdValue.toLocaleString()}
             </TableCell>
             <TableCell></TableCell>
-            <TableCell className="font-bold">
-              ${totalTargetUsdValue.toLocaleString()}
-            </TableCell>
-            <TableCell></TableCell>
-            <TableCell>
+            <TableCell className="flex">
               <Button
                 variant="ghost"
                 size="icon"
@@ -273,7 +316,7 @@ export default function AllocationTable({
       </Table>
       <div className="flex justify-between mt-4">
         <Button onClick={addNewRow}>Add Token</Button>
-        <Button onClick={handleSubmit}>Submit</Button> {/* Submit button */}
+        <Button onClick={handleSubmit}>Fund It</Button>
       </div>
     </div>
   )

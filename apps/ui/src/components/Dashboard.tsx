@@ -22,46 +22,38 @@ export default function Dashboard() {
     {
       id: 1,
       token: "SOL",
-      allocation: 50,
-      usdValue: 5000,
-      tokenQty: 50,
-      targetUsdValue: 5000,
-      targetTokenQty: 50,
+      allocation: 25,
+      usdValue: 0,
+      tokenQty: 0,
+      mintId: "",
       locked: false,
-      mintId: "6EQssH3g3sjxredCgJoumxB8duVsxJ2u8JHB3zwF1n11",
     },
     {
       id: 2,
       token: "ETH",
-      allocation: 20,
-      usdValue: 2000,
-      tokenQty: 1,
-      targetUsdValue: 2000,
-      targetTokenQty: 1,
+      allocation: 25,
+      usdValue: 0,
+      tokenQty: 0,
+      mintId: "",
       locked: false,
-      mintId: "6Qb1Wzq7u1mZKkjn2fq7sK9Q6f1Lx3bwQ5xRMsQmBrJ3",
     },
     {
       id: 3,
       token: "BTC",
-      allocation: 15,
-      usdValue: 1500,
-      tokenQty: 0.05,
-      targetUsdValue: 1500,
-      targetTokenQty: 0.05,
+      allocation: 25,
+      usdValue: 0,
+      tokenQty: 0,
+      mintId: "",
       locked: false,
-      mintId: "6T9Gx3ewdhMGPp7WH5oFRpT4UnhBa17M7Rf5RAkm6j5a",
     },
     {
       id: 4,
       token: "USDC",
-      allocation: 15,
-      usdValue: 1,
-      tokenQty: 1500,
-      targetUsdValue: 1500,
-      targetTokenQty: 1500,
+      allocation: 25,
+      usdValue: 0,
+      tokenQty: 0,
+      mintId: "",
       locked: false,
-      mintId: "BNf9LShPbTp1e9xLg1us1Vi45pejqCj8TgRRkbcqcR5w",
     },
   ]
 
@@ -72,7 +64,7 @@ export default function Dashboard() {
   const [timeInterval, setTimeInterval] = useState("monthly")
   const [threshold, setThreshold] = useState("5")
   const [allocations, setAllocations] = useState(initialAllocations)
-  const [fundingAmount, setFundingAmount] = useState(10)
+  const [fundingAmount, setFundingAmount] = useState(0)
   const { provider } = useProvider()!
   const wallet = useWallet()
 
@@ -164,7 +156,7 @@ export default function Dashboard() {
     )
     const depositInstruction = await program.methods
       .depositPortfolio({
-        amount: new anchor.BN(10 * 10 ** 9),
+        amount: new anchor.BN(10000 * 10 ** 9),
       })
       .accounts({
         portfolioAccount,
