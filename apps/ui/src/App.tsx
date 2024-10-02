@@ -4,6 +4,7 @@ import { UnifiedWalletProvider } from "@jup-ag/wallet-adapter"
 import LandingPage from "./components/Landing"
 import Dashboard from "./components/Dashboard"
 import Navbar from "./components/Navbar"
+import ContactPage from "./components/ContactPage"
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Routes>
       </Router>
     </UnifiedWalletProvider>
