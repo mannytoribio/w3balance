@@ -27,6 +27,7 @@ export default function Dashboard() {
       tokenQty: 0,
       mintId: "",
       locked: false,
+      deviation: 0,
     },
     {
       id: 2,
@@ -36,6 +37,7 @@ export default function Dashboard() {
       tokenQty: 0,
       mintId: "",
       locked: false,
+      deviation: 0,
     },
     {
       id: 3,
@@ -45,6 +47,7 @@ export default function Dashboard() {
       tokenQty: 0,
       mintId: "",
       locked: false,
+      deviation: 0,
     },
     {
       id: 4,
@@ -54,6 +57,7 @@ export default function Dashboard() {
       tokenQty: 0,
       mintId: "",
       locked: false,
+      deviation: 0,
     },
   ]
 
@@ -65,6 +69,7 @@ export default function Dashboard() {
   const [threshold, setThreshold] = useState("5")
   const [allocations, setAllocations] = useState(initialAllocations)
   const [fundingAmount, setFundingAmount] = useState(0)
+  const [isFundedPortfolio, setIsFundedPortfolio] = useState(false)
   const { provider } = useProvider()!
   const wallet = useWallet()
 
@@ -180,28 +185,38 @@ export default function Dashboard() {
     )
     console.log("what the fuck?")
     console.log("Data for submission ret:", ret)
+
+    setTimeout(() => {
+      setIsFundedPortfolio(true)
+    }, 3000)
   }
 
   return (
     <div className="mt-16">
       <h2 className="text-2xl font-bold mb-4">Portfolio Allocations</h2>
-      <ThresholdSelection
-        rebalanceType={rebalanceType}
-        setRebalanceType={setRebalanceType}
-        timeInterval={timeInterval}
-        setTimeInterval={setTimeInterval}
-        threshold={threshold}
-        setThreshold={setThreshold}
-      />
+      {isFundedPortfolio ? (
+        <>
+          <h2 className="text-2xl font-bold mt-10 mb-4">Distributions</h2>
+          <PortfolioAllocationCharts allocations={allocations} />
+        </>
+      ) : (
+        <ThresholdSelection
+          rebalanceType={rebalanceType}
+          setRebalanceType={setRebalanceType}
+          timeInterval={timeInterval}
+          setTimeInterval={setTimeInterval}
+          threshold={threshold}
+          setThreshold={setThreshold}
+        />
+      )}
       <AllocationTable
         fundingAmount={fundingAmount}
         setFundingAmount={setFundingAmount}
         allocations={allocations}
         setAllocations={setAllocations}
-        handleSubmit={handleSubmit} // Pass handleSubmit
+        handleSubmit={handleSubmit}
+        isFunded={isFundedPortfolio}
       />
-      <h2 className="text-2xl font-bold mt-10 mb-4">Distributions</h2>
-      <PortfolioAllocationCharts />
     </div>
   )
 }

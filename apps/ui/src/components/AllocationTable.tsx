@@ -69,6 +69,7 @@ type Allocation = {
   tokenQty: number
   locked: boolean
   mintId: string
+  deviation: number
 }
 
 interface AllocationTableProps {
@@ -77,6 +78,7 @@ interface AllocationTableProps {
   allocations: Allocation[]
   setAllocations: React.Dispatch<React.SetStateAction<Allocation[]>>
   handleSubmit: () => void
+  isFunded: boolean
 }
 
 export default function AllocationTable({
@@ -85,6 +87,7 @@ export default function AllocationTable({
   allocations,
   setAllocations,
   handleSubmit,
+  isFunded,
 }: AllocationTableProps) {
   useEffect(() => {
     updateAllocations()
@@ -103,6 +106,7 @@ export default function AllocationTable({
           targetTokenQty,
           usdValue: targetUsdValue,
           tokenQty: targetTokenQty,
+          deviation: 0,
         }
       })
     )
@@ -144,6 +148,7 @@ export default function AllocationTable({
         usdValue: 0,
         tokenQty: 0,
         locked: false,
+        deviation: 0,
       },
     ])
   }
@@ -209,7 +214,7 @@ export default function AllocationTable({
             <TableHead>Target %</TableHead>
             <TableHead>USD Value</TableHead>
             <TableHead>Token Qty</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>{isFunded ? <>Deviation</> : <>Actions</>}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -226,37 +231,45 @@ export default function AllocationTable({
                 />
               </TableCell>
               <TableCell>
-                <Select
-                  value={alloc.token}
-                  onValueChange={(value: string) =>
-                    handleTokenChange(alloc.id, value)
-                  }
-                >
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Select token" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tokenOptions.map((token) => (
-                      <SelectItem key={token.value} value={token.value}>
-                        {token.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isFunded ? (
+                  <p className="text-start">{alloc.token}</p>
+                ) : (
+                  <Select
+                    value={alloc.token}
+                    onValueChange={(value: string) =>
+                      handleTokenChange(alloc.id, value)
+                    }
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Select token" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tokenOptions.map((token) => (
+                        <SelectItem key={token.value} value={token.value}>
+                          {token.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </TableCell>
               <TableCell>
-                <div className="flex items-center">
-                  <Input
-                    type="number"
-                    value={alloc.allocation}
-                    onChange={(e) =>
-                      handleAllocationChange(alloc.id, e.target.value)
-                    }
-                    className="w-20 mr-2"
-                    disabled={alloc.locked}
-                  />
-                  <span>%</span>
-                </div>
+                {isFunded ? (
+                  <p className="text-start">{alloc.allocation}%</p>
+                ) : (
+                  <div className="flex items-center">
+                    <Input
+                      type="number"
+                      value={alloc.allocation}
+                      onChange={(e) =>
+                        handleAllocationChange(alloc.id, e.target.value)
+                      }
+                      className="w-20 mr-2"
+                      disabled={alloc.locked}
+                    />
+                    <span>%</span>
+                  </div>
+                )}
               </TableCell>
               <TableCell className="text-start">
                 ${alloc.usdValue.toLocaleString()}
@@ -267,26 +280,32 @@ export default function AllocationTable({
                 })}
               </TableCell>
               <TableCell>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggleLock(alloc.id)}
-                  >
-                    {alloc.locked ? (
-                      <Lock className="h-4 w-4" />
-                    ) : (
-                      <Unlock className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteRow(alloc.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {isFunded ? (
+                  <p className="text-[#198754] text-start">
+                    {alloc.deviation.toFixed(2)}%
+                  </p>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => toggleLock(alloc.id)}
+                    >
+                      {alloc.locked ? (
+                        <Lock className="h-4 w-4" />
+                      ) : (
+                        <Unlock className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteRow(alloc.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </TableCell>
             </TableRow>
           ))}
@@ -301,23 +320,33 @@ export default function AllocationTable({
               ${totalUsdValue.toLocaleString()}
             </TableCell>
             <TableCell></TableCell>
-            <TableCell className="flex">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={rebalanceAllocations}
-                title="Rebalance allocations"
-              >
-                <Scale className="h-4 w-4" />
-              </Button>
-            </TableCell>
+            {isFunded ? (
+              <TableCell></TableCell>
+            ) : (
+              <TableCell className="flex">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={rebalanceAllocations}
+                  title="Rebalance allocations"
+                >
+                  <Scale className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            )}
           </TableRow>
         </TableBody>
       </Table>
-      <div className="flex justify-between mt-4">
-        <Button onClick={addNewRow}>Add Token</Button>
-        <Button onClick={handleSubmit}>Fund It</Button>
-      </div>
+      {isFunded ? (
+        <div className="flex justify-end mt-4">
+          <Button onClick={handleSubmit}>Trigger Rebalance</Button>
+        </div>
+      ) : (
+        <div className="flex justify-between mt-4">
+          <Button onClick={addNewRow}>Add Token</Button>
+          <Button onClick={handleSubmit}>Fund It</Button>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import React from "react"
 import {
   PieChart,
   Pie,
@@ -15,63 +15,30 @@ const tokenOptions = [
   { value: "USDC", label: "USDC", color: "#2774CA" },
 ]
 
-const initialAllocations = [
-  {
-    id: 1,
-    token: "SOL",
-    allocation: 50,
-    usdValue: 10000,
-    tokenQty: 50,
-    targetUsdValue: 5000,
-    targetTokenQty: 50,
-  },
-  {
-    id: 2,
-    token: "ETH",
-    allocation: 20,
-    usdValue: 2700,
-    tokenQty: 1,
-    targetUsdValue: 2000,
-    targetTokenQty: 1,
-  },
-  {
-    id: 3,
-    token: "BTC",
-    allocation: 15,
-    usdValue: 3500,
-    tokenQty: 0.05,
-    targetUsdValue: 1500,
-    targetTokenQty: 0.05,
-  },
-  {
-    id: 4,
-    token: "USDC",
-    allocation: 15,
-    usdValue: 2000,
-    tokenQty: 2000,
-    targetUsdValue: 1500,
-    targetTokenQty: 1500,
-  },
-]
+interface Allocation {
+  id: number
+  token: string
+  allocation: number
+  usdValue: number
+  tokenQty: number
+  targetUsdValue?: number
+  targetTokenQty?: number
+}
 
-interface CustomizedLabelProps {
-  cx: number
-  cy: number
-  midAngle: number
-  innerRadius: number
-  outerRadius: number
-  percent: number
+interface PortfolioAllocationChartsProps {
+  allocations: Allocation[]
 }
 
 const RADIAN = Math.PI / 180
-const renderCustomizedLabel: FC<CustomizedLabelProps> = ({
+
+const renderCustomizedLabel = ({
   cx,
   cy,
   midAngle,
   innerRadius,
   outerRadius,
   percent,
-}) => {
+}: any) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
@@ -90,8 +57,8 @@ const renderCustomizedLabel: FC<CustomizedLabelProps> = ({
 }
 
 export default function PortfolioAllocationCharts({
-  allocations = initialAllocations,
-}) {
+  allocations,
+}: PortfolioAllocationChartsProps) {
   const totalUsdValue = allocations.reduce(
     (sum, alloc) => sum + alloc.usdValue,
     0
@@ -105,7 +72,7 @@ export default function PortfolioAllocationCharts({
 
   const targetDistribution = allocations.map((alloc) => ({
     name: alloc.token,
-    value: alloc.allocation,
+    value: alloc.allocation, // Target percentage
     percentage: alloc.allocation,
   }))
 
@@ -128,7 +95,10 @@ export default function PortfolioAllocationCharts({
               {currentDistribution.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={tokenOptions.find((t) => t.value === entry.name)?.color}
+                  fill={
+                    tokenOptions.find((t) => t.value === entry.name)?.color ||
+                    "#CCCCCC"
+                  }
                 />
               ))}
             </Pie>
@@ -162,7 +132,10 @@ export default function PortfolioAllocationCharts({
               {targetDistribution.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={tokenOptions.find((t) => t.value === entry.name)?.color}
+                  fill={
+                    tokenOptions.find((t) => t.value === entry.name)?.color ||
+                    "#CCCCCC"
+                  }
                 />
               ))}
             </Pie>
@@ -172,7 +145,9 @@ export default function PortfolioAllocationCharts({
             <Legend />
           </PieChart>
         </ResponsiveContainer>
-        <p className="text-center mt-2">Total: 100%</p>
+        <p className="text-center mt-2">
+          Deviation: <span className="text-[#198754]">0%</span>
+        </p>
       </div>
     </div>
   )
