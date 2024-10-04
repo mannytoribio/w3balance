@@ -5,12 +5,20 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { type W3balanceContract, IDL } from './w3balance_contract';
+import {
+  type W3balanceContract,
+  IDL,
+} from '@libs/program/src/w3balance_contract';
 import { useWallet, WalletContextState } from '@jup-ag/wallet-adapter';
 import { useMemo } from 'react';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { supportTokens, Token } from '@libs/program';
 import * as anchor from '@project-serum/anchor';
+
+// TODO: we can and should do better than this;
+export const delegatedRebalanceAddress = new PublicKey(
+  'FgtCE8mFs6Wt2emdXS8VRHTKorJbCsG7dogk9aQpjaYg'
+);
 
 export const programId = new PublicKey(
   '46gecgivx6mbKb7gfZFVjBGbBgR1n91NEj3naj2LrF8u'
@@ -52,6 +60,7 @@ export const useProvider = () => {
 };
 
 export const getProgram = async (provider: AnchorProvider) => {
+  console.log(IDL);
   return new Program(
     IDL,
     programId,
@@ -100,13 +109,13 @@ export const createPortfolio = async (
   const createPortfolioInstruction = await program.methods
     .createPortfolio({
       uniqueName: portfolioName,
-      delegatedRebalanceAddress: wallet.publicKey!,
+      delegatedRebalanceAddress,
       updateFrequency,
     })
     .accounts({
       payer: wallet.publicKey!,
       portfolioAccount,
-      delegatedRebalanceAddress: wallet.publicKey!,
+      delegatedRebalanceAddress,
     })
     .instruction();
   const mintInstructions: TransactionInstruction[] = [];
@@ -163,6 +172,7 @@ export const createPortfolio = async (
     portfolioAccount,
     true
   );
+  console.log(depositAmount);
   const depositInstruction = await program.methods
     .depositPortfolio({
       amount: new anchor.BN(depositAmount * 10 ** usdc.decimals),
@@ -176,12 +186,14 @@ export const createPortfolio = async (
     })
     .instruction();
 
-  await wallet.sendTransaction(
+  const ret = await wallet.sendTransaction(
     new Transaction().add(
       createPortfolioInstruction,
       ...mintInstructions,
       depositInstruction
     ),
-    provider.connection
+    provider.connection,
+    { skipPreflight: true }
   );
+  console.log(ret);
 };

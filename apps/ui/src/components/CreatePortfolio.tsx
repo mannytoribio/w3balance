@@ -135,7 +135,7 @@ export const CreatePortfolioPage = () => {
         <CardHeader className="bg-primary/5">
           <CardTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-primary">
             <Briefcase className="h-5 w-5 sm:h-6 sm:w-6" />
-            Create Your First Portfolio
+            Create Portfolio
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 sm:pt-6">

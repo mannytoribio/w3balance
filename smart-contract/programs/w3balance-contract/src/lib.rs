@@ -47,14 +47,4 @@ pub mod w3balance_contract {
     ) -> Result<()> {
         handle_rebalance_portfolio(ctx, amount_in, minimum_amount_out)
     }
-
-    pub fn proxy_initialize(
-        ctx: Context<ProxyInitialize>,
-        init_amount_0: u64,
-        init_amount_1: u64,
-        open_time: u64,
-    ) -> Result<()> {
-        print!("proxy_initialize");
-        handle_proxy_initialize(ctx, init_amount_0, init_amount_1, open_time)
-    }
 }

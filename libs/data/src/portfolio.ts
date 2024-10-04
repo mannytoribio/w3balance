@@ -3,22 +3,33 @@ import { Token } from '@libs/program';
 
 export interface TokenAllocation {
   percentage: number;
-  token: Token;
+  tokenMint: string;
   portfolioId: string;
   accountKey: string;
   userId: string;
   userKey: string;
+  txSignature: string;
+  createdAt: Date;
+}
+
+export interface DepositPortfolio {
+  portfolioId: string;
+  mintToken: string;
+  userId: string;
+  userKey: string;
+  txSignature: string;
+  createdAt: Date;
+  amount: number;
 }
 
 export interface Portfolio {
-  id: string;
   name: string;
-  allocations: TokenAllocation[];
-  rebalanceFrequency: string;
+  rebalanceFrequency: number;
   createdAt: Date;
   accountKey: string;
   userId: string;
   userKey: string;
+  txSignature: string;
 }
 
 export const getTokenAllocationCol = async () => {
@@ -34,6 +45,16 @@ export const getTokenAllocationCol = async () => {
 export const getPortfolioCol = async () => {
   const client = await getMongoClient();
   const col = client.collection<Portfolio>('portfolios');
+  await col.createIndex({
+    createdAt: -1,
+  });
+
+  return col;
+};
+
+export const getDepositPortfolioCol = async () => {
+  const client = await getMongoClient();
+  const col = client.collection<DepositPortfolio>('deposit-portfolios');
   await col.createIndex({
     createdAt: -1,
   });
