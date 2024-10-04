@@ -46,6 +46,7 @@ const createPortfolio = async (uniqueName: string) => {
     .createPortfolio({
       uniqueName: uniqueName,
       delegatedRebalanceAddress: owner.publicKey,
+      updateFrequency: 0,
     })
     .accounts({
       portfolioAccount,
@@ -205,7 +206,7 @@ describe('w3balance-contract', () => {
     expect(portfolio.uniqueName === uniqueName);
   });
 
-  it.only('Adds a Portfolio Token Allocation', async () => {
+  it('Adds a Portfolio Token Allocation', async () => {
     const { portfolioAccount, owner } = await createPortfolio(
       'My First Portfolio'
     );
@@ -271,6 +272,9 @@ describe('w3balance-contract', () => {
       mint,
       100
     );
+    const ogBalance = await program.provider.connection.getTokenAccountBalance(
+      ownerTokenAccount.address
+    );
     await withdrawalPortfolio(
       owner,
       ownerTokenAccount.address,
@@ -288,6 +292,8 @@ describe('w3balance-contract', () => {
       await program.provider.connection.getTokenAccountBalance(
         ownerTokenAccount.address
       );
-    expect(ownerTokenBalance.value.uiAmount).to.equal(100);
+    expect(ownerTokenBalance.value.uiAmount).to.equal(
+      ogBalance.value.uiAmount + 100
+    );
   });
 });

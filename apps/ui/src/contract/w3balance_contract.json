@@ -492,6 +492,10 @@
           {
             "name": "delegatedRebalanceAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "updateFrequency",
+            "type": "u8"
           }
         ]
       }
@@ -526,6 +530,10 @@
           {
             "name": "delegatedRebalanceAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "updateFrequency",
+            "type": "u8"
           }
         ]
       }

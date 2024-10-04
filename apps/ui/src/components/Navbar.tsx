@@ -1,5 +1,5 @@
-import { UnifiedWalletButton } from "@jup-ag/wallet-adapter"
-import { Link } from "react-router-dom"
+import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
+import { Link } from 'react-router-dom';
 
 export default function Navbar() {
   return (
@@ -8,18 +8,16 @@ export default function Navbar() {
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/w3Balance_text-jHC4RJAFISZ79tg2SEirFiILEPsQmC.png"
           alt="w3Balance Logo"
-          width={150}
-          height={40}
-          className="mr-2"
+          className="mr-2 h-12 sm:h-24"
         />
         <span className="sr-only">w3Balance</span>
       </Link>
       <nav className="ml-auto flex items-center gap-4 sm:gap-6">
         <Link
           className="text-sm font-medium hover:underline underline-offset-4"
-          to="/dashboard"
+          to="/demo"
         >
-          Dashboard
+          Devnet Demo
         </Link>
         <Link
           className="text-sm font-medium hover:underline underline-offset-4"
@@ -30,5 +28,5 @@ export default function Navbar() {
         <UnifiedWalletButton />
       </nav>
     </header>
-  )
+  );
 }

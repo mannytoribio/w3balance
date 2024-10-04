@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ScrollText, ShieldCheck, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { UnifiedWalletButton } from '@jup-ag/wallet-adapter';
 
 const LandingPage: FC = () => {
   return (
@@ -24,9 +23,9 @@ const LandingPage: FC = () => {
                 </p>
               </div>
               <div className="space-x-4">
-                <Link to="/dashboard">
+                <Link to="/demo">
                   <Button className="bg-black text-white hover:bg-gray-800">
-                    Get Started
+                    Try Devnet Demo
                   </Button>
                 </Link>
                 <Button variant="outline">Learn More</Button>

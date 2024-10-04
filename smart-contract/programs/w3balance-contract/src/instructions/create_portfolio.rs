@@ -7,7 +7,7 @@ pub struct CreatePortfolioAccounts<'info> {
     #[account(
         init,
         payer = payer,
-        space = 36 + 32 + 32,
+        space = 36 + 32 + 32 + 1,
         seeds = [b"portfolio".as_ref(), payer.key().as_ref(), unique_name.as_ref()],
         bump
     )]
@@ -26,12 +26,15 @@ pub struct Portfolio {
     pub unique_name: String, // 4 + 32 = 36
     pub total_percentage: u8,
     pub delegated_rebalance_address: Pubkey, // 32
+    // 0: 'Every 5 Minutes', 1: 'Daily', 2: 'Monthly', 3: 'Yearly'
+    pub update_frequency: u8, // 1
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct CreatePortfolioData {
     pub unique_name: String,
     pub delegated_rebalance_address: Pubkey,
+    pub update_frequency: u8,
 }
 
 pub fn handle_create_portfolio(
@@ -43,5 +46,6 @@ pub fn handle_create_portfolio(
     portfolio.unique_name = data.unique_name;
     portfolio.delegated_rebalance_address = data.delegated_rebalance_address;
     portfolio.total_percentage = 0;
+    portfolio.update_frequency = data.update_frequency;
     Ok(())
 }

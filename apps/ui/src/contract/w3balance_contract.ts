@@ -492,6 +492,10 @@ export type W3balanceContract = {
           {
             name: 'delegatedRebalanceAddress';
             type: 'publicKey';
+          },
+          {
+            name: 'updateFrequency';
+            type: 'u8';
           }
         ];
       };
@@ -526,6 +530,10 @@ export type W3balanceContract = {
           {
             name: 'delegatedRebalanceAddress';
             type: 'publicKey';
+          },
+          {
+            name: 'updateFrequency';
+            type: 'u8';
           }
         ];
       };
@@ -1059,6 +1067,10 @@ export const IDL: W3balanceContract = {
             name: 'delegatedRebalanceAddress',
             type: 'publicKey',
           },
+          {
+            name: 'updateFrequency',
+            type: 'u8',
+          },
         ],
       },
     },
@@ -1092,6 +1104,10 @@ export const IDL: W3balanceContract = {
           {
             name: 'delegatedRebalanceAddress',
             type: 'publicKey',
+          },
+          {
+            name: 'updateFrequency',
+            type: 'u8',
           },
         ],
       },
