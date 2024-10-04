@@ -1,77 +1,82 @@
-import React, { useState } from "react"
-import AllocationTable from "./AllocationTable"
-import PortfolioAllocationCharts from "./PortfolioAllocationCharts"
-import ThresholdSelection from "./ThresholdSelection"
-import { getProgram, useProvider } from "@/contract"
-import { PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
-import { utils } from "@project-serum/anchor"
-import { useWallet } from "@jup-ag/wallet-adapter"
-import { getAssociatedTokenAddressSync } from "@solana/spl-token"
-import * as anchor from "@project-serum/anchor"
+import React, { useState } from 'react';
+import AllocationTable from './AllocationTable';
+import PortfolioAllocationCharts from './PortfolioAllocationCharts';
+import ThresholdSelection from './ThresholdSelection';
+import { getProgram, useProvider } from '@/contract';
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import { utils } from '@project-serum/anchor';
+import { useWallet } from '@jup-ag/wallet-adapter';
+import { getAssociatedTokenAddressSync } from '@solana/spl-token';
+import * as anchor from '@project-serum/anchor';
 
 const mints = [
-  "6EQssH3g3sjxredCgJoumxB8duVsxJ2u8JHB3zwF1n11",
-  "6Qb1Wzq7u1mZKkjn2fq7sK9Q6f1Lx3bwQ5xRMsQmBrJ3",
-  "6T9Gx3ewdhMGPp7WH5oFRpT4UnhBa17M7Rf5RAkm6j5a",
-  "BNf9LShPbTp1e9xLg1us1Vi45pejqCj8TgRRkbcqcR5w",
-  "2aaymuBQ83N8BmwkDrnA24iymfM5TbnGdsPqJ9bbWK4v",
-]
+  // usdc
+  '6EQssH3g3sjxredCgJoumxB8duVsxJ2u8JHB3zwF1n11',
+  '6Qb1Wzq7u1mZKkjn2fq7sK9Q6f1Lx3bwQ5xRMsQmBrJ3',
+  '6T9Gx3ewdhMGPp7WH5oFRpT4UnhBa17M7Rf5RAkm6j5a',
+  'BNf9LShPbTp1e9xLg1us1Vi45pejqCj8TgRRkbcqcR5w',
+  '2aaymuBQ83N8BmwkDrnA24iymfM5TbnGdsPqJ9bbWK4v',
+];
 
 export default function Dashboard() {
   const initialAllocations = [
     {
       id: 1,
-      token: "SOL",
+      token: 'SOL',
       allocation: 25,
       usdValue: 0,
       tokenQty: 0,
-      mintId: "",
+      mintId: '',
       locked: false,
       deviation: 0,
     },
     {
       id: 2,
-      token: "ETH",
+      token: 'ETH',
       allocation: 25,
       usdValue: 0,
       tokenQty: 0,
-      mintId: "",
+      mintId: '',
       locked: false,
       deviation: 0,
     },
     {
       id: 3,
-      token: "BTC",
+      token: 'BTC',
       allocation: 25,
       usdValue: 0,
       tokenQty: 0,
-      mintId: "",
+      mintId: '',
       locked: false,
       deviation: 0,
     },
     {
       id: 4,
-      token: "USDC",
+      token: 'USDC',
       allocation: 25,
       usdValue: 0,
       tokenQty: 0,
-      mintId: "",
+      mintId: '',
       locked: false,
       deviation: 0,
     },
-  ]
+  ];
 
-  const [rebalanceType, setRebalanceType] = useState("time")
+  const [rebalanceType, setRebalanceType] = useState('time');
   const [portfolioName, setPortfolioName] = useState(
     (Math.random() + 1).toString(36).substring(7)
-  )
-  const [timeInterval, setTimeInterval] = useState("monthly")
-  const [threshold, setThreshold] = useState("5")
-  const [allocations, setAllocations] = useState(initialAllocations)
-  const [fundingAmount, setFundingAmount] = useState(0)
-  const [isFundedPortfolio, setIsFundedPortfolio] = useState(false)
-  const { provider } = useProvider()!
-  const wallet = useWallet()
+  );
+  const [timeInterval, setTimeInterval] = useState('monthly');
+  const [threshold, setThreshold] = useState('5');
+  const [allocations, setAllocations] = useState(initialAllocations);
+  const [fundingAmount, setFundingAmount] = useState(0);
+  const [isFundedPortfolio, setIsFundedPortfolio] = useState(false);
+  const { provider } = useProvider()!;
+  const wallet = useWallet();
 
   const handleSubmit = async () => {
     const data = {
@@ -80,18 +85,18 @@ export default function Dashboard() {
       timeInterval,
       allocations,
       portfolioName,
-    }
-    const program = await getProgram(provider)
+    };
+    const program = await getProgram(provider);
     const [portfolioAccount] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from(utils.bytes.utf8.encode("portfolio")),
+        Buffer.from(utils.bytes.utf8.encode('portfolio')),
         wallet.publicKey!.toBuffer(),
         Buffer.from(utils.bytes.utf8.encode(portfolioName)),
       ],
       program.programId
-    )
+    );
 
-    console.log("Portfolio account:", portfolioAccount.toString())
+    console.log('Portfolio account:', portfolioAccount.toString());
     const createPortfolioInstruction = await program.methods
       .createPortfolio({
         uniqueName: portfolioName,
@@ -102,25 +107,25 @@ export default function Dashboard() {
         portfolioAccount,
         delegatedRebalanceAddress: wallet.publicKey!,
       })
-      .instruction()
-    const mintInstructions: TransactionInstruction[] = []
+      .instruction();
+    const mintInstructions: TransactionInstruction[] = [];
     for (const mint of mints) {
       const [portfolioTokenAllocationAccount] =
         PublicKey.findProgramAddressSync(
           [
-            Buffer.from(utils.bytes.utf8.encode("portfolio_token_allocation")),
+            Buffer.from(utils.bytes.utf8.encode('portfolio_token_allocation')),
             portfolioAccount.toBuffer(),
             wallet.publicKey!.toBuffer(),
             new PublicKey(mint).toBuffer(),
           ],
           program.programId
-        )
+        );
       const portfolioTokenAllocationTokenAccount =
         getAssociatedTokenAddressSync(
           new PublicKey(mint),
           portfolioAccount,
           true
-        )
+        );
       mintInstructions.push(
         await program.methods
           .addPortfolioTokenAllocation({
@@ -135,7 +140,7 @@ export default function Dashboard() {
             portfolioTokenAllocationTokenAccount,
           })
           .instruction()
-      )
+      );
     }
 
     const ownerTokenAccount = getAssociatedTokenAddressSync(
@@ -144,21 +149,21 @@ export default function Dashboard() {
       new PublicKey(mints[0]),
       wallet.publicKey!,
       false
-    )
+    );
     const [portfolioTokenAllocationAccount] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from(utils.bytes.utf8.encode("portfolio_token_allocation")),
+        Buffer.from(utils.bytes.utf8.encode('portfolio_token_allocation')),
         portfolioAccount.toBuffer(),
         wallet.publicKey!.toBuffer(),
         new PublicKey(mints[0]).toBuffer(),
       ],
       program.programId
-    )
+    );
     const portfolioTokenAllocationTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(mints[0]),
       portfolioAccount,
       true
-    )
+    );
     const depositInstruction = await program.methods
       .depositPortfolio({
         amount: new anchor.BN(10000 * 10 ** 9),
@@ -170,7 +175,7 @@ export default function Dashboard() {
         portfolioTokenAllocationAccount,
         portfolioTokenAllocationTokenAccount,
       })
-      .instruction()
+      .instruction();
 
     const ret = await wallet.sendTransaction(
       new Transaction().add(
@@ -182,14 +187,14 @@ export default function Dashboard() {
       {
         skipPreflight: true,
       }
-    )
-    console.log("what the fuck?")
-    console.log("Data for submission ret:", ret)
+    );
+    console.log('what the fuck?');
+    console.log('Data for submission ret:', ret);
 
     setTimeout(() => {
-      setIsFundedPortfolio(true)
-    }, 3000)
-  }
+      setIsFundedPortfolio(true);
+    }, 3000);
+  };
 
   return (
     <div className="mt-16">
@@ -218,5 +223,5 @@ export default function Dashboard() {
         isFunded={isFundedPortfolio}
       />
     </div>
-  )
+  );
 }

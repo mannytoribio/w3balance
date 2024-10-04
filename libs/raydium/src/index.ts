@@ -159,7 +159,7 @@ const pools = [
   //   1 * 10 ** 9
   // );
 
-  const to = new PublicKey('2Yj5CpWrcn1AVd165iVE9LhzkgJPmikp6YKjkdDPKc7b');
+  const to = new PublicKey('2wHxwVkLmPpwxe6tsjgzEEDeYXyEWEdXgBPwzAq6BjHj');
   for (const mint of mints) {
     const tokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
@@ -174,7 +174,7 @@ const pools = [
       new PublicKey(mint),
       tokenAccount.address,
       owner,
-      100_000_000_000_000
+      100_000_000_000_000_000
     );
     console.log('Minted to', tokenAccount.address.toBase58());
   }
