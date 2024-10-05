@@ -42,6 +42,7 @@ export const CreatePortfolioPage = () => {
   const navigate = useNavigate();
   const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const { mutate: airdropToken, isLoading: isAirdropping } =
     trpc.airdropToken.useMutation({
       onSuccess: async () => {
@@ -77,6 +78,7 @@ export const CreatePortfolioPage = () => {
 
   const onSubmit = async (data: FormData) => {
     setError(null);
+    setLoading(true);
     const totalAllocation = data.tokens.reduce(
       (sum, token) => sum + token.allocation,
       0
@@ -104,10 +106,20 @@ export const CreatePortfolioPage = () => {
         wallet,
         provider
       );
+      // should be enough time to propogate the tx;
+      // TODO: come up with a better way to do this;
+      await new Promise((res) =>
+        setTimeout(() => {
+          res({});
+        }, 10_000)
+      );
+      navigate('/congrats-portfolio');
     } catch {
       setError(
         'Error processing your tx on chain.  Make sure your wallet is connected to Devnet and try again'
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -380,10 +392,11 @@ export const CreatePortfolioPage = () => {
               </Alert>
             )}
             <Button
+              disabled={loading}
               type="submit"
               className="w-full text-base sm:text-lg font-semibold"
             >
-              Create Portfolio
+              {loading ? 'Creating Portfolio...' : 'Create Portfolio'}
             </Button>
           </form>
         </CardContent>

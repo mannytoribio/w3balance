@@ -101,6 +101,7 @@ export default function Dashboard() {
       .createPortfolio({
         uniqueName: portfolioName,
         delegatedRebalanceAddress: wallet.publicKey!,
+        updateFrequency: 0,
       })
       .accounts({
         payer: wallet.publicKey!,

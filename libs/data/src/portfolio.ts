@@ -66,7 +66,7 @@ export const getPortfolios = async (userKey: string) => {
   const col = await getPortfolioCol();
   const tokenAllocationCol = await getTokenAllocationCol();
   const portfolios = await col.find({ userKey }).toArray();
-  const portfolioIds = portfolios.map((portfolio) => portfolio.id);
+  const portfolioIds = portfolios.map((portfolio) => portfolio._id.toString());
   const allocations = await tokenAllocationCol
     .find({ portfolioId: { $in: portfolioIds } })
     .toArray();
@@ -74,7 +74,7 @@ export const getPortfolios = async (userKey: string) => {
     return {
       ...portfolio,
       allocations: allocations.filter(
-        (allocation) => allocation.portfolioId === portfolio.id
+        (allocation) => allocation.portfolioId === portfolio._id.toString()
       ),
     };
   });

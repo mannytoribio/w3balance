@@ -137,7 +137,7 @@ export const createPortfolio = async (
     mintInstructions.push(
       await program.methods
         .addPortfolioTokenAllocation({
-          percentage: 20,
+          percentage: alloc.percentage,
           tokenMint: new PublicKey(alloc.tokenAddress),
         })
         .accounts({
@@ -192,8 +192,7 @@ export const createPortfolio = async (
       ...mintInstructions,
       depositInstruction
     ),
-    provider.connection,
-    { skipPreflight: true }
+    provider.connection
   );
   console.log(ret);
 };

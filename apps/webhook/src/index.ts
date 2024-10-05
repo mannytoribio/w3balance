@@ -101,7 +101,7 @@ const handleAddPortfolioTokenAllocationInstruction = async (
         accountKey: portfolioTokenAllocationAccount.toString(),
         percentage: data.percentage,
         portfolioId: existingPortfolio._id.toString(),
-        tokenMint: data.tokenMint,
+        tokenMint: data.tokenMint.toString(),
         userId: signer,
         userKey: signer,
         txSignature,
