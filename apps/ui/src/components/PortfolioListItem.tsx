@@ -1,6 +1,6 @@
 import { Portfolio, PortfolioTokenAllocation, TokenPrice } from '@/trpc';
 import { formatDistanceToNow } from 'date-fns';
-import { RefreshCw, Eye, Edit, Trash2 } from 'lucide-react';
+import { RefreshCw, Eye, Edit } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ResponsiveContainer, Pie, Cell, Tooltip, PieChart } from 'recharts';
 import { Button } from './ui/button';
@@ -120,7 +120,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value, name, props) => [
+                  formatter={(value, name) => [
                     `${value}% ($${tokenBalances[name]?.usdc.toLocaleString(
                       'en',
                       {
@@ -136,7 +136,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
             </ResponsiveContainer>
           </div>
           <div>
-            {portfolio.allocations?.map((allocation, index) => (
+            {portfolio.allocations?.map((allocation) => (
               <div key={allocation.accountKey} className="mb-1">
                 <span className="font-semibold">
                   {
