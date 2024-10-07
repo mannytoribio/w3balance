@@ -17,7 +17,7 @@ export const deposit = async (
   uiInputAmount: string
 ) => {
   const raydium = await initSdk(owner, connection);
-
+  console.log('hello world?');
   // SOL - USDC pool
   let poolInfo: ApiV3PoolInfoStandardItemCpmm;
   let poolKeys: CpmmKeys | undefined;
@@ -36,10 +36,12 @@ export const deposit = async (
   }
 
   //   const uiInputAmount = '0.0001';
+  console.log(uiInputAmount);
   const inputAmount = new anchor.BN(
     new Decimal(uiInputAmount).mul(10 ** poolInfo.mintA.decimals).toFixed(0)
   );
-  const slippage = new Percent(1, 100); // 1%
+  console.log(inputAmount);
+  const slippage = new Percent(100, 100); // 1%
   const baseIn = true;
 
   // computePairAmount is not necessary, addLiquidity will compute automatically,
@@ -62,22 +64,15 @@ export const deposit = async (
   computeRes.anotherAmount.fee -> token2022 transfer fee, might be undefined if isn't token2022 program
   */
 
-  const { execute } = await raydium.cpmm.addLiquidity({
+  const { execute, transaction } = await raydium.cpmm.addLiquidity({
     poolInfo,
     poolKeys,
     inputAmount,
     slippage,
     baseIn,
     txVersion,
-    // optional: set up priority fee here
-    // computeBudgetConfig: {
-    //   units: 600000,
-    //   microLamports: 100000000,
-    // },
   });
   // don't want to wait confirm, set sendAndConfirm to false or don't pass any params to execute
   const { txId } = await execute({ sendAndConfirm: true });
-  console.log('pool deposited', {
-    txId: `https://explorer.solana.com/tx/${txId}`,
-  });
+  console.log(txId);
 };

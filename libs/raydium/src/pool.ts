@@ -28,14 +28,14 @@ export const createPool = async (
     ).publicKey.toBase58();
   });
 
-  const { execute, extInfo, transaction } = await raydium.cpmm.createPool({
+  const { execute, extInfo } = await raydium.cpmm.createPool({
     // poolId: // your custom publicKey, default sdk will automatically calculate pda pool id
     programId: DEVNET_PROGRAM_ID.CREATE_CPMM_POOL_PROGRAM, // mainnet: CREATE_CPMM_POOL_PROGRAM
     poolFeeAccount: DEVNET_PROGRAM_ID.CREATE_CPMM_POOL_FEE_ACC, // mainnet:  CREATE_CPMM_POOL_FEE_ACC
     mintA,
     mintB,
-    mintAAmount: new anchor.BN(100),
-    mintBAmount: new anchor.BN(100),
+    mintAAmount: new anchor.BN(1 * 10 ** mintA.decimals),
+    mintBAmount: new anchor.BN(10000 * 10 ** mintB.decimals),
     startTime: new anchor.BN(0),
     feeConfig: feeConfigs[0],
     associatedOnly: false,
@@ -44,24 +44,19 @@ export const createPool = async (
     },
     txVersion,
   });
-
-  console.log(extInfo);
-
+  console.log('exeucting transaction');
   // don't want to wait confirm, set sendAndConfirm to false or don't pass any params to execute
-  const { txId } = await execute({
-    sendAndConfirm: true,
-  });
-  console.log(txId);
-  console.log('pool created', {
-    txId,
-    poolKeys: Object.keys(extInfo.address).reduce(
-      (acc, cur) => ({
-        ...acc,
-        [cur]: extInfo.address[cur as keyof typeof extInfo.address].toString(),
-      }),
-      {}
-    ),
-  });
+  try {
+    const { txId } = await execute({
+      sendAndConfirm: true,
+      skipPreflight: true,
+    });
 
-  return extInfo.address.poolId;
+    console.log(txId);
+
+    return extInfo.address.poolId;
+  } catch (e) {
+    console.log(JSON.stringify(e));
+    throw e;
+  }
 };

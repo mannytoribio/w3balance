@@ -16,9 +16,13 @@ use raydium_cp_swap::{
 pub struct RebalancePortfolioAccounts<'info> {
     #[account(
         mut,
-        seeds = [b"portfolio".as_ref(), payer.key().as_ref(), portfolio_account.unique_name.as_ref()],
+        seeds = [
+            b"portfolio".as_ref(), 
+            portfolio_account.owner.key().as_ref(), 
+            portfolio_account.unique_name.as_ref()
+        ],
         // Ensure the person calling this instruction is the owner of the portfolio.
-        constraint = portfolio_account.owner == payer.key(),
+        constraint = portfolio_account.delegated_rebalance_address == payer.key(),
         bump,
     )]
     pub portfolio_account: Account<'info, Portfolio>,
@@ -100,18 +104,16 @@ pub fn handle_rebalance_portfolio(
     minimum_amount_out: u64,
 ) -> Result<()> {
     let portfolio = &mut ctx.accounts.portfolio_account;
-    let payer = &ctx.accounts.payer;
-    let payer_key = payer.key();
     let seeds = &[
         b"portfolio".as_ref(),
-        payer_key.as_ref(),
+        portfolio.owner.as_ref(),
         portfolio.unique_name.as_ref(),
     ];
 
     let (_pda, bump) = Pubkey::find_program_address(seeds, ctx.program_id);
 
     let cpi_accounts = cpi::accounts::Swap {
-        payer: ctx.accounts.payer.to_account_info(),
+        payer: portfolio.to_account_info(),
         authority: ctx.accounts.authority.to_account_info(),
         amm_config: ctx.accounts.amm_config.to_account_info(),
         pool_state: ctx.accounts.pool_state.to_account_info(),
@@ -126,13 +128,13 @@ pub fn handle_rebalance_portfolio(
         observation_state: ctx.accounts.observation_state.to_account_info(),
     };
 
-    cpi::swap_base_input(
+    cpi::swap_base_output(
         CpiContext::new_with_signer(
             ctx.accounts.cp_swap_program.to_account_info(),
             cpi_accounts,
             &[&[
                 b"portfolio".as_ref(),
-                ctx.accounts.payer.key().as_ref(),
+                portfolio.owner.as_ref(),
                 portfolio.unique_name.as_ref(),
                 &[bump],
             ]],

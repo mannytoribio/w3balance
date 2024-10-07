@@ -85,10 +85,12 @@ export const CreatePortfolioPage = () => {
     );
     if (!wallet.connected) {
       setError('Please connect your wallet');
+      setLoading(false);
       return;
     }
     if (totalAllocation !== 100) {
       setError('Total allocation must equal 100%');
+      setLoading(false);
       return;
     }
     // Here you would typically send this data to your Solana program

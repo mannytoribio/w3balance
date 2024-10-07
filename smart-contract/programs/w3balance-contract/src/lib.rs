@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 pub mod errors;
 pub mod instructions;
 use instructions::{
-    add_portfolio_token_allocation::*, create_portfolio::*, deposit_portfolio::*, proxy_init::*,
+    add_portfolio_token_allocation::*, create_portfolio::*, deposit_portfolio::*,
     rebalance_portfolio::*, withdrawal_portfolio::*,
 };
 

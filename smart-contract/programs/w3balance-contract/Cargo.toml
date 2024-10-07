@@ -20,6 +20,7 @@ anchor-lang = "=0.29.0"
 anchor-spl = "=0.29.0"
 raydium-cp-swap = { git = "https://github.com/raydium-io/raydium-cp-swap", features = [
     "no-entrypoint",
-    "cpi",
+    "cpi",  
+    "devnet"
 ] }
 solana-program = "=1.17.0"

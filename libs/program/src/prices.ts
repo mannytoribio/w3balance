@@ -1,5 +1,8 @@
 export interface TokenPrice {
   id: string;
+  mintSymbol: string;
+  vsToken: string;
+  vsTokenSymbol: string;
   price: number;
 }
 
@@ -15,14 +18,14 @@ export const fetchTokenPrices = async (
         method: 'GET',
       }
     );
-    console.log('response', response);
     if (!response.ok) {
       throw new Error('Failed to fetch token prices');
     }
 
-    const data: TokenPrice[] = await response.json();
-    console.log('TokenPrice data', data);
-    return data;
+    const { data } = (await response.json()) as {
+      data: { [key: string]: TokenPrice };
+    };
+    return Object.values(data);
   } catch (error) {
     console.error('Error fetching token prices', error);
     throw error;

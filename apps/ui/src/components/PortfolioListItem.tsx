@@ -32,12 +32,12 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
   const { provider } = useProvider()!;
   const { portfolio, tokenPrices } = props;
 
-  console.log(portfolio);
-
   useEffect(() => {
     (async () => {
+      if (Object.keys(tokenBalances).length > 0) {
+        return;
+      }
       const temp: typeof tokenBalances = {};
-      console.log(portfolio.allocations);
       for (const alloc of portfolio.allocations) {
         const balance = await getTokenAllocationTokenBalance(alloc);
         const usdcValue = getUSDCValue(alloc.tokenMint, balance!);
@@ -68,7 +68,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
     console.log(alloc);
     const account = getAssociatedTokenAddressSync(
       new PublicKey(alloc.tokenMint),
-      new PublicKey(alloc.accountKey),
+      new PublicKey(portfolio.accountKey),
       true
     );
     try {
@@ -121,7 +121,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                 </Pie>
                 <Tooltip
                   formatter={(value, name) => [
-                    `${value}% ($${tokenBalances[name]?.usdc.toLocaleString(
+                    `${value}% (${tokenBalances[name]?.usdc.toLocaleString(
                       'en',
                       {
                         currency: 'USD',
@@ -147,7 +147,6 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                 </span>{' '}
                 {allocation.percentage.toFixed(2)}%
                 <span className="text-muted-foreground ml-1">
-                  $
                   {tokenBalances[allocation.tokenMint]?.usdc.toLocaleString(
                     'en',
                     {
@@ -160,7 +159,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
               </div>
             ))}
             <div className="mt-2 font-bold">
-              Total: $
+              Total:{' '}
               {Object.values(tokenBalances)
                 .reduce((sum, curr) => sum + curr.usdc, 0)
                 .toLocaleString('en', {
