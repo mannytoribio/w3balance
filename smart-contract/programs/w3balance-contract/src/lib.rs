@@ -2,14 +2,15 @@ use anchor_lang::prelude::*;
 pub mod errors;
 pub mod instructions;
 use instructions::{
-    add_portfolio_token_allocation::*, create_portfolio::*, deposit_portfolio::*,
-    rebalance_portfolio::*, withdrawal_portfolio::*,
+    add_portfolio_token_allocation::*, create_portfolio::*, demo_rebalance_portfolio::*,
+    deposit_portfolio::*, rebalance_portfolio::*, withdrawal_portfolio::*,
 };
 
 declare_id!("46gecgivx6mbKb7gfZFVjBGbBgR1n91NEj3naj2LrF8u");
 
 #[program]
 pub mod w3balance_contract {
+
     use super::*;
 
     pub fn create_portfolio(
@@ -46,5 +47,12 @@ pub mod w3balance_contract {
         minimum_amount_out: u64,
     ) -> Result<()> {
         handle_rebalance_portfolio(ctx, amount_in, minimum_amount_out)
+    }
+
+    pub fn demo_rebalance_portfolio(
+        ctx: Context<DemoRebalancePortfolioAccounts>,
+        amount_in: u64,
+    ) -> Result<()> {
+        demo_handle_rebalance_portfolio(ctx, amount_in)
     }
 }

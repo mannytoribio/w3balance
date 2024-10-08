@@ -6,16 +6,17 @@ import {
 import { connection, getPayerWallet, getProgram } from '@libs/environment';
 import { fetchTokenPrices, supportTokens } from '@libs/program';
 import {
+  createMintToInstruction,
   getAssociatedTokenAddressSync,
+  mintTo,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import { PublicKey, Transaction } from '@solana/web3.js';
-import * as anchor from '@project-serum/anchor';
-import { initSdk } from '@libs/raydium';
 import {
-  CurveCalculator,
-  getPdaObservationId,
-} from '@raydium-io/raydium-sdk-v2';
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import * as anchor from '@project-serum/anchor';
 
 // TODO: eventually handle prod/mainnet;
 const pools = [
@@ -103,17 +104,20 @@ export const getSwaps = (
   );
   const target: { [key: string]: { quantity: number; usdcTotal: number } } = {};
   for (const alloc of allocations) {
-    const usdcTotal = (alloc.percentage / 100) * totalUSDCValue;
+    const usdcTotal = parseFloat(
+      ((alloc.percentage / 100) * totalUSDCValue).toFixed(2)
+    );
     target[alloc.tokenMint] = {
       usdcTotal,
       quantity: usdcTotal / alloc.usdcPrice,
     };
   }
+  console.log(target);
   const isBalanced = () =>
     allocations.every(
       (alloc) =>
-        alloc.quantity.toFixed(2) ===
-        target[alloc.tokenMint].quantity.toFixed(2)
+        alloc.quantity.toFixed(7) ===
+        target[alloc.tokenMint].quantity.toFixed(7)
     );
   const swaps: {
     from: string;
@@ -138,14 +142,119 @@ export const getSwaps = (
 
     const amountIn = usdcValueToSwap / from.usdcPrice;
     const amountOut = usdcValueToSwap / to.usdcPrice;
-    swaps.push({ from: from.tokenMint, to: to.tokenMint, amountIn, amountOut });
+    const swap = {
+      from: from.tokenMint,
+      to: to.tokenMint,
+      amountIn,
+      amountOut,
+    };
+    swaps.push(swap);
     from.quantity -= amountIn;
     to.quantity += amountOut;
   }
   return swaps;
 };
 
-export const executeSwaps = async (portfolioAccount: string) => {
+// export const executeSwaps = async (portfolioAccount: string) => {
+//   const col = await getPortfolioCol();
+//   const tokenAllocationCol = await getTokenAllocationCol();
+//   const portfolio = (await col.findOne({ accountKey: portfolioAccount }))!;
+//   const allocations = await tokenAllocationCol
+//     .find({ portfolioId: portfolio._id.toString() })
+//     .toArray();
+//   // we need to figure out how to match the allocation distribution defined in the portfolio;
+//   const tokenPrices = await fetchTokenPrices(
+//     supportTokens.filter((t) => t.name !== 'USDC').map((t) => t.mainnetAddress),
+//     supportTokens.find((t) => t.name === 'USDC')!.mainnetAddress
+//   );
+//   const tokenQuantities = await Promise.all(
+//     allocations.map(async (alloc) => {
+//       const account = getAssociatedTokenAddressSync(
+//         new PublicKey(alloc.tokenMint),
+//         new PublicKey(portfolioAccount),
+//         true
+//       );
+//       try {
+//         const balance = await connection.getTokenAccountBalance(account);
+//         return balance.value;
+//       } catch {
+//         console.log('No balance found for', alloc.tokenMint);
+//         return {
+//           uiAmount: 0,
+//           amount: '0',
+//           decimals: 9,
+//         };
+//       }
+//     })
+//   );
+//   const parsedAllocations = allocations.map((alloc, i) => ({
+//     ...alloc,
+//     quantity: tokenQuantities[i].uiAmount!,
+//     usdcPrice: 1,
+//   }));
+//   const swaps = getSwaps(parsedAllocations);
+
+//   const payer = await getPayerWallet();
+//   const program = await getProgram(payer);
+//   const raydium = await initSdk(payer, connection);
+//   console.log('Swaps', { swaps });
+//   const instructions = await Promise.all(
+//     swaps.map(async (swap) => {
+//       const poolAccount = pools.find(
+//         (p) => p.tokens.includes(swap.from) && p.tokens.includes(swap.to)
+//       )!.key;
+//       const data = await raydium.cpmm.getPoolInfoFromRpc(poolAccount);
+//       const poolInfo = data.poolInfo;
+//       const poolKeys = data.poolKeys;
+//       const inAmount = new anchor.BN(swap.amountIn * 10 ** 9).abs().toNumber();
+//       const out = new anchor.BN(swap.amountOut * 10 ** 9).abs().toNumber();
+//       console.log('numbers', { inAmount, out });
+//       if (inAmount === 0 || out === 0) {
+//         console.log('Should skip this one');
+//         return Promise.resolve();
+//       }
+//       return program.methods
+//         .rebalancePortfolio(new anchor.BN(inAmount), new anchor.BN(out))
+//         .accounts({
+//           ammConfig: new PublicKey(poolKeys.config.id),
+//           authority: new PublicKey(poolKeys.authority),
+//           inputTokenAccount: getAssociatedTokenAddressSync(
+//             new PublicKey(swap.from),
+//             new PublicKey(portfolioAccount),
+//             true
+//           ),
+//           outputTokenAccount: getAssociatedTokenAddressSync(
+//             new PublicKey(swap.to),
+//             new PublicKey(portfolioAccount),
+//             true
+//           ),
+//           inputTokenMint: new PublicKey(swap.from),
+//           outputTokenMint: new PublicKey(swap.to),
+//           inputVault: data.rpcData.vaultA,
+//           outputVault: data.rpcData.vaultB,
+//           portfolioAccount: new PublicKey(portfolioAccount),
+//           observationState: getPdaObservationId(
+//             new PublicKey(poolInfo.programId),
+//             new PublicKey(poolInfo.id)
+//           ).publicKey,
+//           poolState: new PublicKey(poolKeys.id),
+//           payer: payer.publicKey,
+//           cpSwapProgram: new PublicKey(poolInfo.programId),
+//           inputTokenProgram: TOKEN_PROGRAM_ID,
+//           outputTokenProgram: TOKEN_PROGRAM_ID,
+//         })
+//         .instruction();
+//     })
+//   );
+//   const ret = await connection.sendTransaction(
+//     new Transaction().add(...instructions.filter((i) => !!i)),
+//     [payer]
+//   );
+
+//   console.log(ret);
+// };
+
+export const executeDemoSwaps = async (portfolioAccount: string) => {
   const col = await getPortfolioCol();
   const tokenAllocationCol = await getTokenAllocationCol();
   const portfolio = (await col.findOne({ accountKey: portfolioAccount }))!;
@@ -180,66 +289,69 @@ export const executeSwaps = async (portfolioAccount: string) => {
   const parsedAllocations = allocations.map((alloc, i) => ({
     ...alloc,
     quantity: tokenQuantities[i].uiAmount!,
-    usdcPrice: 1,
+    usdcPrice:
+      tokenPrices.find(
+        (p) =>
+          p.id ===
+          supportTokens.find((t) => t.devnetAddress === alloc.tokenMint)!
+            .mainnetAddress
+      )?.price || 1,
   }));
+  console.log(parsedAllocations);
   const swaps = getSwaps(parsedAllocations);
 
   const payer = await getPayerWallet();
   const program = await getProgram(payer);
-  const raydium = await initSdk(payer, connection);
-  console.log('Swaps', { swaps });
-  const instructions = await Promise.all(
-    swaps.map(async (swap) => {
-      const poolAccount = pools.find(
-        (p) => p.tokens.includes(swap.from) && p.tokens.includes(swap.to)
-      )!.key;
-      const data = await raydium.cpmm.getPoolInfoFromRpc(poolAccount);
-      const poolInfo = data.poolInfo;
-      const poolKeys = data.poolKeys;
-      const inAmount = new anchor.BN(swap.amountIn * 10 ** 9).abs().toNumber();
-      const out = new anchor.BN(swap.amountOut * 10 ** 9).abs().toNumber();
-      console.log('numbers', { inAmount, out });
-      if (inAmount === 0 || out === 0) {
-        console.log('Should skip this one');
-        return Promise.resolve();
-      }
-      return program.methods
-        .rebalancePortfolio(new anchor.BN(inAmount), new anchor.BN(out))
-        .accounts({
-          ammConfig: new PublicKey(poolKeys.config.id),
-          authority: new PublicKey(poolKeys.authority),
-          inputTokenAccount: getAssociatedTokenAddressSync(
-            new PublicKey(swap.from),
-            new PublicKey(portfolioAccount),
-            true
-          ),
-          outputTokenAccount: getAssociatedTokenAddressSync(
-            new PublicKey(swap.to),
-            new PublicKey(portfolioAccount),
-            true
-          ),
-          inputTokenMint: new PublicKey(swap.from),
-          outputTokenMint: new PublicKey(swap.to),
-          inputVault: data.rpcData.vaultA,
-          outputVault: data.rpcData.vaultB,
-          portfolioAccount: new PublicKey(portfolioAccount),
-          observationState: getPdaObservationId(
-            new PublicKey(poolInfo.programId),
-            new PublicKey(poolInfo.id)
-          ).publicKey,
-          poolState: new PublicKey(poolKeys.id),
-          payer: payer.publicKey,
-          cpSwapProgram: new PublicKey(poolInfo.programId),
-          inputTokenProgram: TOKEN_PROGRAM_ID,
-          outputTokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .instruction();
-    })
-  );
+  // we need to take from teh portfolio the amount in and give back to the portfolio the amount out;
+  const instructions: TransactionInstruction[] = [];
+  console.log(swaps);
+  for (const swap of swaps) {
+    const amountIn = Math.floor(swap.amountIn * 10 ** 9);
+    const amountOut = Math.floor(swap.amountOut * 10 ** 9);
+    if (amountIn === 0 || amountOut === 0) {
+      continue;
+    }
+    const mintInstruction = createMintToInstruction(
+      new PublicKey(swap.to),
+      getAssociatedTokenAddressSync(
+        new PublicKey(swap.to),
+        new PublicKey(portfolioAccount),
+        true
+      ),
+      payer.publicKey,
+      amountOut
+    );
+    const sendOutInstruction = await program.methods
+      .demoRebalancePortfolio(new anchor.BN(amountIn))
+      .accounts({
+        payer: payer.publicKey,
+        portfolioAccount: new PublicKey(portfolio.accountKey),
+        portfolioTokenAccount: getAssociatedTokenAddressSync(
+          new PublicKey(swap.from),
+          new PublicKey(portfolioAccount),
+          true
+        ),
+        delegatedTokenAccount: getAssociatedTokenAddressSync(
+          new PublicKey(swap.from),
+          payer.publicKey,
+          false
+        ),
+        portfolioTokenAllocationAccount: allocations.find(
+          (a) => a.tokenMint === swap.from
+        )!.accountKey,
+      })
+      .instruction();
+    instructions.push(sendOutInstruction, mintInstruction);
+  }
+
   const ret = await connection.sendTransaction(
-    new Transaction().add(...instructions.filter((i) => !!i)),
+    new Transaction().add(...instructions),
     [payer]
   );
 
+  await col.updateOne(
+    { accountKey: portfolioAccount },
+    { $set: { lastRebalanced: new Date() } }
+  );
   console.log(ret);
 };

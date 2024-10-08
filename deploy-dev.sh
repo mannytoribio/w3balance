@@ -1,7 +1,7 @@
 export PROJECT_ID=w3balance-backend-gcp-6920
 gcloud config set project w3balance-backend-gcp-6920
 
-apps="webhook trpc"
+apps="webhook trpc balancer"
 for app in $apps
 do 
 cd apps/$app

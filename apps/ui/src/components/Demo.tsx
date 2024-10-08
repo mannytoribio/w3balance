@@ -33,6 +33,11 @@ export const Demo = () => {
 
   return (
     <div className="container mx-auto p-2 sm:p-4 mt-12">
+      <div className="flex justify-end my-4">
+        <Button onClick={() => navigate('/create-portfolio')}>
+          Create Portfolio
+        </Button>
+      </div>
       {portfolios.length === 0 ? (
         <Card>
           <CardHeader>

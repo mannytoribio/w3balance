@@ -1,22 +1,17 @@
-// import express from 'express';
-// import { getPortfolioCol, getTokenAllocationCol } from '@libs/data';
-// import { fetchTokenPrices, supportTokens } from '@libs/program';
+import express from 'express';
 
-import { executeSwaps } from './service';
+import { executeDemoSwaps } from './service';
+import { scheduleBalanceJob } from '@libs/balancer';
 
-// const app = express();
-// app.use(express.json());
-// app.post('/balance/:portfolioAccount', async (req, res) => {
-//   const { portfolioAccount } = req.params;
-//   const { data } = req.body;
-//   res.send('OK');
-// });
+const app = express();
+app.use(express.json());
+app.post('/balance/:portfolioAccount', async (req, res) => {
+  const portfolioAccount = req.params.portfolioAccount;
+  await executeDemoSwaps(portfolioAccount);
+  await scheduleBalanceJob(portfolioAccount);
+  res.send({});
+});
 
-// app.listen(8080, () => {
-//   console.log('listening on 8080');
-// });
-
-(async () => {
-  const profileAccount = 'KoAhgm1wcmHJsc8h3hxj3j8R2raaB5khsSxhfLZZ1qb';
-  await executeSwaps(profileAccount);
-})();
+app.listen(8080, () => {
+  console.log('listening on 8080');
+});

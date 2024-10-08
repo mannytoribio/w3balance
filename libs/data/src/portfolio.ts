@@ -25,6 +25,7 @@ export interface DepositPortfolio {
 export interface Portfolio {
   name: string;
   rebalanceFrequency: number;
+  lastRebalanced?: Date;
   createdAt: Date;
   accountKey: string;
   userId: string;

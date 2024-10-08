@@ -10,6 +10,8 @@ import { supportTokens } from '@libs/program';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { Badge } from './ui/badge';
+import { rebalanceFrequencies } from '@/lib/utils';
+import { format } from 'path';
 
 const COLORS = [
   '#0088FE',
@@ -45,7 +47,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
       }
       setTokenBalances(temp);
     })();
-  }, [tokenPrices, portfolio, provider]);
+  }, []);
 
   const getUSDCValue = (tokenMint: string, amount: number) => {
     if (!tokenPrices) {
@@ -87,10 +89,17 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
     >
       <TableCell className="font-medium">{portfolio.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">
+        <Badge variant="outline" className="mb-4">
           <RefreshCw className="mr-1 h-3 w-3" />
-          {portfolio.rebalanceFrequency} days
-        </Badge>
+          {rebalanceFrequencies[portfolio.rebalanceFrequency]}
+        </Badge>{' '}
+        <br />
+        {portfolio.lastRebalanced && (
+          <Badge variant="outline" className="mb-4">
+            <RefreshCw className="mr-1 h-3 w-3" />
+            Last Rebalanced: {formatDistanceToNow(portfolio.lastRebalanced)}
+          </Badge>
+        )}
       </TableCell>
       <TableCell>
         {formatDistanceToNow(portfolio.createdAt, {
@@ -103,14 +112,19 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={portfolio.allocations}
+                  data={portfolio.allocations.map((a) => ({
+                    value: 10,
+                    percentage: a.percentage,
+                    name:
+                      supportTokens.find((t) => t.devnetAddress === a.tokenMint)
+                        ?.symbol || 'USDC',
+                  }))}
                   dataKey="percentage"
-                  nameKey="tokenMint"
+                  nameKey="name"
                   cx="50%"
                   cy="50%"
                   outerRadius={40}
                   fill="#8884d8"
-                  label
                 >
                   {portfolio.allocations.map((entry, index) => (
                     <Cell
@@ -121,14 +135,14 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                 </Pie>
                 <Tooltip
                   formatter={(value, name) => [
-                    `${value}% (${tokenBalances[name]?.usdc.toLocaleString(
-                      'en',
-                      {
-                        currency: 'USD',
-                        style: 'currency',
-                        minimumFractionDigits: 2,
-                      }
-                    )})`,
+                    `${value}% (${tokenBalances[
+                      supportTokens.find((t) => t.symbol === name)
+                        ?.devnetAddress || ''
+                    ]?.usdc.toLocaleString('en', {
+                      currency: 'USD',
+                      style: 'currency',
+                      minimumFractionDigits: 2,
+                    })} USD)`,
                     name,
                   ]}
                 />
@@ -145,17 +159,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                     )?.symbol
                   }
                 </span>{' '}
-                {allocation.percentage.toFixed(2)}%
-                <span className="text-muted-foreground ml-1">
-                  {tokenBalances[allocation.tokenMint]?.usdc.toLocaleString(
-                    'en',
-                    {
-                      currency: 'USD',
-                      style: 'currency',
-                      minimumFractionDigits: 2,
-                    }
-                  )}
-                </span>
+                {tokenBalances[allocation.tokenMint]?.amount.toFixed(5)}
               </div>
             ))}
             <div className="mt-2 font-bold">
@@ -176,7 +180,7 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
           <Button variant="outline" size="sm">
             <Eye className="mr-1 h-4 w-4" /> View
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled>
             <Edit className="mr-1 h-4 w-4" /> Edit
           </Button>
         </div>

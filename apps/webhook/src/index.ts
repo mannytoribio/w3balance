@@ -10,6 +10,7 @@ import {
 } from '@libs/data';
 import { BorshCoder, utils } from '@project-serum/anchor';
 import { supportTokens } from '@libs/program';
+import { scheduleBalanceJob } from '@libs/balancer';
 
 interface PortfolioInstructionData {
   uniqueName: string;
@@ -64,6 +65,8 @@ const handleCreatePortfolioInstruction = async (
     },
     { upsert: true }
   );
+
+  return portfolioAccount.toString();
 };
 
 const handleAddPortfolioTokenAllocationInstruction = async (
@@ -165,6 +168,7 @@ app.post('/helius', async (req, res) => {
   const body = req.body as { '0': EnrichedTransaction };
   const tx = body['0'];
   try {
+    let accountKey = '';
     const program = await getProgram(Keypair.generate());
     const rawInstructions = tx.instructions.filter(
       (i) => i.programId === programId.toString()
@@ -181,7 +185,11 @@ app.post('/helius', async (req, res) => {
       const { data } = instructions.find(
         (i) => i.instruction.name === 'createPortfolio'
       )!.instruction.data as { data: PortfolioInstructionData };
-      await handleCreatePortfolioInstruction(signer, data, tx.signature);
+      accountKey = await handleCreatePortfolioInstruction(
+        signer,
+        data,
+        tx.signature
+      );
     }
     if (
       instructions.find(
@@ -218,6 +226,10 @@ app.post('/helius', async (req, res) => {
         instruction!.accounts,
         tx.signature
       );
+    }
+    console.log(accountKey);
+    if (accountKey) {
+      await scheduleBalanceJob(accountKey, true);
     }
   } catch (error) {
     console.error('Error processing transaction', error);

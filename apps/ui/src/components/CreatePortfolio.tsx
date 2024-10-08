@@ -26,8 +26,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { supportTokens } from '@libs/program';
 import { createPortfolio, getTokenBalance, useProvider } from '@/contract';
 import { trpc } from '@/trpc';
-
-const rebalanceFrequencies = ['Every 5 Minutes', 'Daily', 'Monthly', 'Yearly'];
+import { rebalanceFrequencies } from '@/lib/utils';
 
 type FormData = {
   name: string;
@@ -58,8 +57,13 @@ export const CreatePortfolioPage = () => {
     getValues,
   } = useForm<FormData>({
     defaultValues: {
-      name: 'First Portfolio',
-      tokens: [{ token: 'USDC', allocation: 100 }],
+      name: `First Portfolio`,
+      tokens: [
+        { token: 'USDC', allocation: 25 },
+        { token: 'Bitcoin', allocation: 25 },
+        { token: 'Ethereum', allocation: 25 },
+        { token: 'Solana', allocation: 25 },
+      ],
       rebalanceFrequency: rebalanceFrequencies[0],
       depositAmount: 50,
     },

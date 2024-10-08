@@ -296,4 +296,39 @@ describe('w3balance-contract', () => {
       ogBalance.value.uiAmount + 100
     );
   });
+
+  it('Demo rebalance portfolio', async () => {
+    const { portfolioAccount, owner } = await createPortfolio(
+      'My First Portfolio'
+    );
+    const {
+      mint,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+    } = await addPortfolioTokenAllocation(owner, portfolioAccount, 50);
+    const { ownerTokenAccount } = await depositPortfolio(
+      owner,
+      portfolioAccount,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+      mint,
+      100
+    );
+    await program.methods
+      .demoRebalancePortfolio(new anchor.BN(5 * 10 ** 9))
+      .accounts({
+        payer: owner.publicKey,
+        portfolioAccount,
+        portfolioTokenAllocationAccount,
+        delegatedTokenAccount: ownerTokenAccount.address,
+        portfolioTokenAccount: portfolioTokenAllocationTokenAccount,
+      })
+      .signers([owner])
+      .rpc();
+
+    const balance = await program.provider.connection.getTokenAccountBalance(
+      portfolioTokenAllocationTokenAccount
+    );
+    expect(balance.value.uiAmount).to.equal(95);
+  });
 });
