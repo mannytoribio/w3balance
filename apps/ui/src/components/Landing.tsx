@@ -1,14 +1,13 @@
 import { FC } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowRight, ScrollText, ShieldCheck, Scale } from 'lucide-react';
+import { ScrollText, ShieldCheck, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LandingPage: FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-black">
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-24 xl:py-48">
+        <section className="w-full py-12 md:py-24 lg:py-24 xl:py-48 flex flex-col items-center justify-center">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
@@ -33,7 +32,7 @@ const LandingPage: FC = () => {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-24 bg-gray-100 rounded-[10px] shadow-custom-shadow">
+        <section className="w-full py-12 md:py-24 lg:py-24 bg-gray-100 rounded-[10px] shadow-custom-shadow  flex flex-col items-center justify-center">
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
               <div className="flex flex-col items-center space-y-4 text-center">
@@ -63,7 +62,7 @@ const LandingPage: FC = () => {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-12 md:py-24 lg:py-32  flex flex-col items-center justify-center">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -73,28 +72,6 @@ const LandingPage: FC = () => {
                 <p className="mx-auto max-w-[600px] text-gray-600 md:text-xl">
                   Join thousands of investors who trust w3Balance for their
                   crypto portfolio management.
-                </p>
-              </div>
-              <div className="w-full max-w-sm space-y-2">
-                <form className="flex space-x-2">
-                  <Input
-                    className="max-w-lg flex-1"
-                    placeholder="Enter your email"
-                    type="email"
-                  />
-                  <Button
-                    className="bg-black text-white hover:bg-gray-800"
-                    type="submit"
-                  >
-                    <ArrowRight className="mr-2 h-4 w-4" />
-                    Sign Up
-                  </Button>
-                </form>
-                <p className="text-xs text-gray-600">
-                  By signing up, you agree to our{' '}
-                  <a className="underline underline-offset-2" href="#">
-                    Terms & Conditions
-                  </a>
                 </p>
               </div>
             </div>

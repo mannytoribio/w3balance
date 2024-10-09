@@ -21,14 +21,14 @@ export default defineConfig({
   },
   define: {
     'process.env': process.env ?? {},
-    global: {},
+    // global: {},
   },
   server: {
     port: 3000,
   },
   build: {
     target: 'esnext',
-    outDir: 'build',
+    outDir: 'dist',
     rollupOptions: {
       plugins: [
         nodePolyfills({ crypto: true }),

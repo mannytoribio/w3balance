@@ -12,7 +12,29 @@ export interface TokenAllocation {
   createdAt: Date;
 }
 
+export interface PortfolioRebalance {
+  portfolioId: string;
+  userId: string;
+  userKey: string;
+  txSignature: string;
+  createdAt: Date;
+  toMint: string;
+  fromMint: string;
+  toAmount: number;
+  fromAmount: number;
+}
+
 export interface DepositPortfolio {
+  portfolioId: string;
+  mintToken: string;
+  userId: string;
+  userKey: string;
+  txSignature: string;
+  createdAt: Date;
+  amount: number;
+}
+
+export interface WithdrawPortfolio {
   portfolioId: string;
   mintToken: string;
   userId: string;
@@ -53,9 +75,26 @@ export const getPortfolioCol = async () => {
   return col;
 };
 
+export const getRebalancePortfolioCol = async () => {
+  const client = await getMongoClient();
+  const col = client.collection<PortfolioRebalance>('rebalance-portfolios');
+
+  return col;
+};
+
 export const getDepositPortfolioCol = async () => {
   const client = await getMongoClient();
   const col = client.collection<DepositPortfolio>('deposit-portfolios');
+  await col.createIndex({
+    createdAt: -1,
+  });
+
+  return col;
+};
+
+export const getWithdrawPortfolioCol = async () => {
+  const client = await getMongoClient();
+  const col = client.collection<WithdrawPortfolio>('withdraw-portfolios');
   await col.createIndex({
     createdAt: -1,
   });
@@ -79,4 +118,32 @@ export const getPortfolios = async (userKey: string) => {
       ),
     };
   });
+};
+
+export const getPortfolio = async (accountKey: string) => {
+  const col = await getPortfolioCol();
+  const tokenAllocationCol = await getTokenAllocationCol();
+  const depositCol = await getDepositPortfolioCol();
+  const withdrawCol = await getWithdrawPortfolioCol();
+  const rebalanceCol = await getRebalancePortfolioCol();
+  const portfolio = (await col.findOne({ accountKey }))!;
+  const allocations = await tokenAllocationCol
+    .find({ portfolioId: portfolio._id.toString() })
+    .toArray();
+  const deposits = await depositCol
+    .find({ portfolioId: portfolio._id.toString() })
+    .toArray();
+  const withdraws = await withdrawCol
+    .find({ portfolioId: portfolio._id.toString() })
+    .toArray();
+  const rebalances = await rebalanceCol
+    .find({ portfolioId: portfolio._id.toString() })
+    .toArray();
+  return {
+    portfolio,
+    allocations,
+    deposits,
+    withdraws,
+    rebalances,
+  };
 };

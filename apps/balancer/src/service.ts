@@ -1,5 +1,6 @@
 import {
   getPortfolioCol,
+  getRebalancePortfolioCol,
   getTokenAllocationCol,
   TokenAllocation,
 } from '@libs/data';
@@ -353,5 +354,20 @@ export const executeDemoSwaps = async (portfolioAccount: string) => {
     { accountKey: portfolioAccount },
     { $set: { lastRebalanced: new Date() } }
   );
-  console.log(ret);
+  const rebalanceCol = await getRebalancePortfolioCol();
+  await Promise.all(
+    swaps.map(async (swap) =>
+      rebalanceCol.insertOne({
+        createdAt: new Date(),
+        fromAmount: swap.amountIn,
+        fromMint: swap.from,
+        portfolioId: portfolio._id.toString(),
+        toAmount: swap.amountOut,
+        toMint: swap.to,
+        txSignature: ret,
+        userId: payer.publicKey.toString(),
+        userKey: payer.publicKey.toString(),
+      })
+    )
+  );
 };

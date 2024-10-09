@@ -1,7 +1,7 @@
 import { t } from './context';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { getPortfolios } from '@libs/data';
+import { getPortfolio, getPortfolios } from '@libs/data';
 import { connection, getPayerWallet } from '@libs/environment';
 import { PublicKey } from '@solana/web3.js';
 import { mintTo, getOrCreateAssociatedTokenAccount } from '@solana/spl-token';
@@ -37,5 +37,9 @@ export const portfolioRouter = t.router({
   getPortfolios: t.procedure.input(z.string()).query(async ({ ctx, input }) => {
     const portfolios = await getPortfolios(input);
     return portfolios;
+  }),
+  getPortfolio: t.procedure.input(z.string()).query(async ({ ctx, input }) => {
+    const portfolio = await getPortfolio(input);
+    return portfolio;
   }),
 });

@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { supportTokens, Token } from '@libs/program';
 import * as anchor from '@project-serum/anchor';
+import { skip } from 'node:test';
 
 // TODO: we can and should do better than this;
 export const delegatedRebalanceAddress = new PublicKey(
@@ -194,5 +195,55 @@ export const createPortfolio = async (
     ),
     provider.connection
   );
+  console.log(ret);
+};
+
+export const withdrawPortfolio = async (
+  amount: number,
+  portfolioAccount: string,
+  tokenMint: string,
+  provider: AnchorProvider,
+  wallet: WalletContextState
+) => {
+  const program = await getProgram(provider);
+  const ownerTokenAccount = getAssociatedTokenAddressSync(
+    new PublicKey(tokenMint),
+    provider.wallet.publicKey,
+    false
+  );
+  const [portfolioTokenAllocationAccount] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(utils.bytes.utf8.encode('portfolio_token_allocation')),
+      new PublicKey(portfolioAccount).toBuffer(),
+      provider.wallet.publicKey.toBuffer(),
+      new PublicKey(tokenMint).toBuffer(),
+    ],
+    program.programId
+  );
+
+  const portfolioTokenAllocationTokenAccount = getAssociatedTokenAddressSync(
+    new PublicKey(tokenMint),
+    new PublicKey(portfolioAccount),
+    true
+  );
+  const withdrawInstruction = await program.methods
+    .withdrawPortfolio({
+      amount: new anchor.BN(amount * 10 ** 9),
+    })
+    .accounts({
+      portfolioAccount: new PublicKey(portfolioAccount),
+      payer: provider.wallet.publicKey,
+      payerTokenAccount: ownerTokenAccount,
+      portfolioTokenAllocationAccount,
+      portfolioTokenAllocationTokenAccount,
+      mint: new PublicKey(tokenMint),
+    })
+    .instruction();
+  const ret = await wallet.sendTransaction(
+    new Transaction().add(withdrawInstruction),
+    provider.connection,
+    { skipPreflight: true }
+  );
+
   console.log(ret);
 };

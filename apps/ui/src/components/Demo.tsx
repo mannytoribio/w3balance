@@ -15,21 +15,29 @@ import { PortfolioListItem } from './PortfolioListItem';
 export const Demo = () => {
   const navigate = useNavigate();
   const wallet = useWallet();
-  const { data: portfolios, isLoading } = trpc.getPortfolios.useQuery(
-    wallet.publicKey?.toString() || '',
-    {
+  const { data: portfolios, isLoading: isLoadingPortfolios } =
+    trpc.getPortfolios.useQuery(wallet.publicKey?.toString() || '', {
       enabled: !!wallet.publicKey,
-    }
-  );
-  const { data: tokenPrices } = trpc.getPrices.useQuery(undefined, {
-    refetchInterval: 30 * 1000,
-  });
+    });
+  const { data: tokenPrices, isLoading: isLoadingTokens } =
+    trpc.getPrices.useQuery(undefined, {
+      refetchInterval: 30 * 1000,
+    });
 
-  if (isLoading || !portfolios || !tokenPrices) {
-    return <div>Loading...</div>;
+  if (isLoadingPortfolios || isLoadingTokens) {
+    return (
+      <div className="container mx-auto p-2 sm:p-4 mt-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Loading...</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-lg">Loading portfolios...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
-
-  console.log(tokenPrices);
 
   return (
     <div className="container mx-auto p-2 sm:p-4 mt-12">
@@ -38,7 +46,7 @@ export const Demo = () => {
           Create Portfolio
         </Button>
       </div>
-      {portfolios.length === 0 ? (
+      {(portfolios?.length || 0) === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>No Portfolios</CardTitle>
@@ -71,10 +79,10 @@ export const Demo = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {portfolios.map((portfolio) => (
+                {portfolios?.map((portfolio) => (
                   <PortfolioListItem
                     portfolio={portfolio}
-                    tokenPrices={tokenPrices}
+                    tokenPrices={tokenPrices!}
                   />
                 ))}
               </TableBody>

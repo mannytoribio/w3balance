@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from './trpc';
 import { CongratsPortfolio } from './components/CongratsPortfolio';
+import { ViewPortfolioPage } from './components/PortfolioView';
 
 const baseUrl = 'https://trpc-1037883282783.us-east4.run.app';
 
@@ -64,6 +65,10 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/demo" element={<Demo />} />
+              <Route
+                path="/portfolio/:accountKey"
+                element={<ViewPortfolioPage />}
+              />
               <Route
                 path="/create-portfolio"
                 element={<CreatePortfolioPage />}

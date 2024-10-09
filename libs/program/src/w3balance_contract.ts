@@ -147,7 +147,7 @@ export type W3balanceContract = {
       ];
     },
     {
-      name: 'withdrawalPortfolio';
+      name: 'withdrawPortfolio';
       accounts: [
         {
           name: 'portfolioTokenAllocationAccount';
@@ -167,6 +167,11 @@ export type W3balanceContract = {
         {
           name: 'payerTokenAccount';
           isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'mint';
+          isMut: false;
           isSigner: false;
         },
         {
@@ -194,7 +199,7 @@ export type W3balanceContract = {
         {
           name: 'data';
           type: {
-            defined: 'WithdrawalPortfolioData';
+            defined: 'WithdrawPortfolioData';
           };
         }
       ];
@@ -465,7 +470,7 @@ export type W3balanceContract = {
       };
     },
     {
-      name: 'WithdrawalPortfolioData';
+      name: 'WithdrawPortfolioData';
       type: {
         kind: 'struct';
         fields: [
@@ -635,7 +640,7 @@ export const IDL: W3balanceContract = {
       ],
     },
     {
-      name: 'withdrawalPortfolio',
+      name: 'withdrawPortfolio',
       accounts: [
         {
           name: 'portfolioTokenAllocationAccount',
@@ -655,6 +660,11 @@ export const IDL: W3balanceContract = {
         {
           name: 'payerTokenAccount',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'mint',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -682,7 +692,7 @@ export const IDL: W3balanceContract = {
         {
           name: 'data',
           type: {
-            defined: 'WithdrawalPortfolioData',
+            defined: 'WithdrawPortfolioData',
           },
         },
       ],
@@ -953,7 +963,7 @@ export const IDL: W3balanceContract = {
       },
     },
     {
-      name: 'WithdrawalPortfolioData',
+      name: 'WithdrawPortfolioData',
       type: {
         kind: 'struct',
         fields: [

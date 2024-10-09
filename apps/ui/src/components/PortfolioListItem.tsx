@@ -11,7 +11,7 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { Badge } from './ui/badge';
 import { rebalanceFrequencies } from '@/lib/utils';
-import { format } from 'path';
+import { useNavigate } from 'react-router-dom';
 
 const COLORS = [
   '#0088FE',
@@ -32,13 +32,11 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
     [key: string]: { usdc: number; amount: number };
   }>({});
   const { provider } = useProvider()!;
+  const navigate = useNavigate();
   const { portfolio, tokenPrices } = props;
 
   useEffect(() => {
     (async () => {
-      if (Object.keys(tokenBalances).length > 0) {
-        return;
-      }
       const temp: typeof tokenBalances = {};
       for (const alloc of portfolio.allocations) {
         const balance = await getTokenAllocationTokenBalance(alloc);
@@ -177,7 +175,11 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
       </TableCell>
       <TableCell>
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/portfolio/${portfolio.accountKey}`)}
+          >
             <Eye className="mr-1 h-4 w-4" /> View
           </Button>
           <Button variant="outline" size="sm" disabled>

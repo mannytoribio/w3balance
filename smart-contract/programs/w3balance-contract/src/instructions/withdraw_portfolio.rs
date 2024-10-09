@@ -1,11 +1,11 @@
 use crate::{Portfolio, PortfolioTokenAllocation};
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
 #[derive(Accounts)]
 #[instruction()]
-pub struct WithdrawalPortfolioAccounts<'info> {
+pub struct WithdrawPortfolioAccounts<'info> {
     #[account(
         mut,
         seeds = [
@@ -32,11 +32,13 @@ pub struct WithdrawalPortfolioAccounts<'info> {
     )]
     pub portfolio_token_allocation_token_account: Account<'info, TokenAccount>,
     #[account(
-        mut,
-        constraint = payer_token_account.mint == portfolio_token_allocation_account.token_mint,
-        constraint = payer_token_account.owner == payer.key(),
+        init_if_needed,
+        payer = payer,
+        associated_token::mint = mint,
+        associated_token::authority = payer
     )]
     pub payer_token_account: Account<'info, TokenAccount>,
+    pub mint: Account<'info, Mint>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -45,13 +47,13 @@ pub struct WithdrawalPortfolioAccounts<'info> {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
-pub struct WithdrawalPortfolioData {
+pub struct WithdrawPortfolioData {
     pub amount: u64,
 }
 
-pub fn handle_withdrawal_portfolio(
-    ctx: Context<WithdrawalPortfolioAccounts>,
-    data: WithdrawalPortfolioData,
+pub fn handle_withdraw_portfolio(
+    ctx: Context<WithdrawPortfolioAccounts>,
+    data: WithdrawPortfolioData,
 ) -> Result<()> {
     let portfolio_token_allocation_token_account =
         &mut ctx.accounts.portfolio_token_allocation_token_account;

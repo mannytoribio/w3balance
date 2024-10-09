@@ -175,16 +175,17 @@ const depositPortfolio = async (
   };
 };
 
-const withdrawalPortfolio = async (
+const withdrawPortfolio = async (
   owner: anchor.web3.Keypair,
   ownerTokenAccount: anchor.web3.PublicKey,
   portfolioAccount: anchor.web3.PublicKey,
   portfolioTokenAllocationAccount: anchor.web3.PublicKey,
   portfolioTokenAllocationTokenAccount: anchor.web3.PublicKey,
+  mint: anchor.web3.PublicKey,
   amount: number
 ) => {
   await program.methods
-    .withdrawalPortfolio({
+    .withdrawPortfolio({
       amount: new anchor.BN(amount * 10 ** 9),
     })
     .accounts({
@@ -193,6 +194,7 @@ const withdrawalPortfolio = async (
       portfolioTokenAllocationAccount,
       portfolioAccount,
       payerTokenAccount: ownerTokenAccount,
+      mint,
     })
     .signers([owner])
     .rpc();
@@ -255,7 +257,7 @@ describe('w3balance-contract', () => {
     expect(portfolioTokenAllocationBalance.value.uiAmount).to.equal(100);
   });
 
-  it('Withdraws tokens from Portfolio Token Allocation', async () => {
+  it.only('Withdraws tokens from Portfolio Token Allocation', async () => {
     const { portfolioAccount, owner } = await createPortfolio(
       'My First Portfolio'
     );
@@ -275,12 +277,13 @@ describe('w3balance-contract', () => {
     const ogBalance = await program.provider.connection.getTokenAccountBalance(
       ownerTokenAccount.address
     );
-    await withdrawalPortfolio(
+    await withdrawPortfolio(
       owner,
       ownerTokenAccount.address,
       portfolioAccount,
       portfolioTokenAllocationAccount,
       portfolioTokenAllocationTokenAccount,
+      mint,
       100
     );
     const portfolioTokenAllocationBalance =

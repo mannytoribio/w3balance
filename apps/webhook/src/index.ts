@@ -7,8 +7,9 @@ import {
   getDepositPortfolioCol,
   getPortfolioCol,
   getTokenAllocationCol,
+  getWithdrawPortfolioCol,
 } from '@libs/data';
-import { BorshCoder, utils } from '@project-serum/anchor';
+import { BN, BorshCoder, utils } from '@project-serum/anchor';
 import { supportTokens } from '@libs/program';
 import { scheduleBalanceJob } from '@libs/balancer';
 
@@ -24,7 +25,7 @@ interface PortfolioTokenAllocationInstructionData {
 }
 
 interface DepositPortfolioInstructionData {
-  amount: number;
+  amount: BN;
 }
 
 const PROJECT_ID = process.env.PROJECT_ID!;
@@ -135,14 +136,53 @@ const handleDepositPortfolioInstruction = async (
     { txSignature },
     {
       $set: {
-        amount: data.amount,
+        amount: data.amount.toNumber(),
         portfolioAllocationId: existingPortfolioAllocation._id.toString(),
+        portfolioId: existingPortfolioAllocation.portfolioId,
         txSignature,
         userId: signer,
         userKey: signer,
         createdAt: new Date(),
         // TODO: this is a bad way to do this but demo gonna demo;
         mintToken: supportTokens.find((s) => s.name === 'USDC')!.devnetAddress,
+      },
+    },
+    { upsert: true }
+  );
+};
+
+const handleWithdrawPortfolioInstruction = async (
+  signer: string,
+  data: DepositPortfolioInstructionData,
+  accounts: string[],
+  txSignature: string
+) => {
+  const col = await getTokenAllocationCol();
+  const existingPortfolioAllocation = await col.findOne({
+    // instead of trying to figure out which account is the portfolio,
+    // lets let mongo tell us;
+    accountKey: { $in: accounts },
+  });
+  if (!existingPortfolioAllocation) {
+    console.log('Portfolio allocation does not exist');
+    return;
+  }
+  const withdraw = await getWithdrawPortfolioCol();
+  await withdraw.updateOne(
+    { txSignature },
+    {
+      $set: {
+        amount: data.amount.toNumber(),
+        portfolioAllocationId: existingPortfolioAllocation._id.toString(),
+        portfolioId: existingPortfolioAllocation.portfolioId,
+        txSignature,
+        userId: signer,
+        userKey: signer,
+        createdAt: new Date(),
+        // TODO: this is a bad way to do this but demo gonna demo;
+        mintToken: supportTokens.find((s) =>
+          accounts.includes(s.devnetAddress)
+        )!.devnetAddress,
       },
     },
     { upsert: true }
@@ -221,6 +261,21 @@ app.post('/helius', async (req, res) => {
         data: DepositPortfolioInstructionData;
       };
       await handleDepositPortfolioInstruction(
+        signer,
+        data,
+        instruction!.accounts,
+        tx.signature
+      );
+    }
+    if (instructions.find((i) => i.instruction.name === 'withdrawPortfolio')) {
+      console.log('Handling withdraw');
+      const instruction = instructions.find(
+        (i) => i.instruction.name === 'withdrawPortfolio'
+      );
+      const { data } = instruction!.instruction.data as {
+        data: DepositPortfolioInstructionData;
+      };
+      await handleWithdrawPortfolioInstruction(
         signer,
         data,
         instruction!.accounts,
