@@ -13,6 +13,9 @@ import { Badge } from './ui/badge';
 import { rebalanceFrequencies } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
+const getToken = (mint: string) =>
+  supportTokens.find((t) => t.devnetAddress === mint)!;
+
 const COLORS = [
   '#0088FE',
   '#00C49F',
@@ -112,7 +115,16 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                 <Pie
                   data={portfolio.allocations.map((a) => ({
                     value: 10,
-                    percentage: a.percentage,
+                    percentage: parseFloat(
+                      (
+                        ((tokenBalances || {})[a.tokenMint]?.usdc /
+                          Object.values(tokenBalances || {}).reduce(
+                            (sum, curr) => sum + curr.usdc,
+                            0
+                          )) *
+                        100
+                      ).toFixed(2)
+                    ),
                     name:
                       supportTokens.find((t) => t.devnetAddress === a.tokenMint)
                         ?.symbol || 'USDC',
@@ -157,7 +169,9 @@ export const PortfolioListItem = (props: PortfolioListItemProps) => {
                     )?.symbol
                   }
                 </span>{' '}
-                {tokenBalances[allocation.tokenMint]?.amount.toFixed(5)}
+                {tokenBalances[allocation.tokenMint]?.amount.toFixed(
+                  getToken(allocation.tokenMint).symbol === 'USDC' ? 2 : 5
+                )}
               </div>
             ))}
             <div className="mt-2 font-bold">

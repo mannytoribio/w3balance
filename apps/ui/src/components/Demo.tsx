@@ -24,7 +24,7 @@ export const Demo = () => {
       refetchInterval: 30 * 1000,
     });
 
-  if (isLoadingPortfolios || isLoadingTokens) {
+  if (!!wallet.publicKey && (isLoadingPortfolios || isLoadingTokens)) {
     return (
       <div className="container mx-auto p-2 sm:p-4 mt-12">
         <Card>
